@@ -11,7 +11,7 @@ import numpy as np
 from idp.core.ast import TableCell
 from idp.core.geometry import PixelBox, normalize_bbox
 from idp.table.grid import detect_grid, ruling_masks
-from idp.table.numbers import fix_numeric_ocr, parse_vn_number
+from idp.table.numbers import extract_number_token, fix_numeric_ocr, parse_vn_number
 
 
 @dataclass
@@ -98,7 +98,8 @@ def repair_cell_text(text: str) -> str:
 
 def sanitize_ocr(text: str, confidence: float) -> tuple[str, float]:
     """Reject degenerate recogniser output (the same token repeated, typical on blank / sparse crops)."""
-    tokens = text.split()
+    tokens = [t for t in text.split() if not re.fullmatch(r"[01]{6,}", t)]
+    text = " ".join(tokens)
     if len(tokens) >= 4:
         run = best = 1
         for a, b in zip(tokens, tokens[1:]):
@@ -151,6 +152,11 @@ def _finalize(cells: list[TableCell]) -> list[TableCell]:
         body = [c for c in cells if c.col == k and not c.is_header and c.text.strip()]
         nums = [c for c in body if parse_vn_number(fix_numeric_ocr(c.text)) is not None]
         if body and len(nums) >= max(1, 0.5 * len(body)):
+            for c in body:
+                token = extract_number_token(c.text) if c not in nums else None
+                if token:
+                    c.text = token
+                    nums.append(c)
             for c in nums:
                 c.text = fix_numeric_ocr(c.text)
                 c.numeric_value = parse_vn_number(c.text)

@@ -36,9 +36,24 @@ def fix_numeric_ocr(text: str) -> str:
     s = "".join(_CONFUSABLE.get(c, c) for c in s)
     s = re.sub(r"(?<=\d)[:;](?=\d{3})", ".", s)
     core = s.strip("()-−– ")
-    if re.fullmatch(r"\d{1,3}(?:,\d{3})+", core):
+    if (
+        re.fullmatch(r"\d{1,3}(?:,\d{3})+", core)
+        or re.fullmatch(r"\d{1,3}(?:\.\d{3})+,\d{3}", core)
+        or re.fullmatch(r"\d{1,3},\d{3}(?:\.\d{3})+", core)
+    ):
         s = s.replace(",", ".")
     return s
+
+
+def extract_number_token(text: str) -> str | None:
+    """``"Is 260"`` → ``"260"``: a short letters-only noise token glued before a number."""
+    tokens = text.split()
+    if len(tokens) != 2:
+        return None
+    noise, value = tokens
+    if len(noise) <= 4 and noise.isalpha() and parse_vn_number(fix_numeric_ocr(value)) is not None:
+        return value
+    return None
 
 
 def looks_numeric(text: str) -> bool:

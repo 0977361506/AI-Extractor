@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from idp.table.builder import OcrLine, build_borderless_table, build_ruled_table, segment_text_lines
+from idp.table.builder import OcrLine, build_borderless_table, build_ruled_table, sanitize_ocr, segment_text_lines
 
 
 class FakeRecognizer:
@@ -142,3 +142,7 @@ def test_ruling_broken_by_pen_stroke_is_restored_from_presence_image():
 
     grid = detect_grid(img, 30, presence_gray=presence)
     assert len(grid.cells) == 6
+
+
+def test_binary_noise_tokens_removed():
+    assert sanitize_ocr("Kết chuyển giá vốn 7/2026 001000000100", 0.8) == ("Kết chuyển giá vốn 7/2026", 0.8)

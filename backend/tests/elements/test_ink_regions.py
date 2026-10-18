@@ -73,3 +73,13 @@ def test_blobs_inside_ignore_boxes_are_skipped():
     m = _masks()
     _draw(m["blue"], lambda c: cv2.rectangle(c, (100, 100), (300, 300), 255, -1))
     assert find_ink_blobs(m, line_height=30, ignore_boxes=[(50, 50, 400, 400)]) == []
+
+
+def test_comb_box_letters_on_one_row_merge_into_one_blob():
+    m = _masks()
+    for i, x in enumerate(range(100, 700, 50)):  # one handwritten letter per comb box
+        if i in (2, 7):
+            continue  # empty boxes between words
+        _draw(m["blue"], lambda c, x=x: cv2.putText(c, "A", (x, 520), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255, 3))
+    blobs = find_ink_blobs(m, line_height=30)
+    assert len(blobs) == 1 and blobs[0].kind == InkKind.HANDWRITING

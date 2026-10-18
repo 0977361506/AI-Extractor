@@ -51,3 +51,18 @@ def test_fix_numeric_ocr_leaves_words_alone():
 def test_looks_numeric():
     assert looks_numeric("(1.290)")
     assert not looks_numeric("Doanh thu")
+
+
+@pytest.mark.parametrize(("raw", "fixed"), [("19.250,000", "19.250.000"), ("3,260.000", "3.260.000"), ("73.500,000", "73.500.000")])
+def test_fix_mixed_separators(raw, fixed):
+    assert fix_numeric_ocr(raw) == fixed
+
+
+def test_strip_noise_prefix_in_numeric_cells():
+    from idp.table.numbers import extract_number_token
+
+    assert extract_number_token("Is 260") == "260"
+    assert extract_number_token("Lan 26.000.000") == "26.000.000"
+    assert extract_number_token("Ca 372") == "372"
+    assert extract_number_token("Doanh thu 2026") is None  # real words are not noise
+    assert extract_number_token("260") is None

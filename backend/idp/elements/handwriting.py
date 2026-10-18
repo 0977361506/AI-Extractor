@@ -57,6 +57,7 @@ def build_ink_elements(
     consumed: set[int] = set()
     elements: list[Element] = []
     fields: list[Element] = []
+    signatures: list[tuple[Element, tuple]] = []
 
     def norm(b):
         return normalize_bbox(b, width, height)
@@ -71,6 +72,12 @@ def build_ink_elements(
             continue
         if blob.kind == InkKind.MARK:
             elements.append(Element(type=ElementType.HANDWRITTEN_NOTE, text="", ink_color=blob.color, description="Khoanh tròn đánh dấu", **base))
+            continue
+
+        # handwritten name right under a signature
+        owner = next((sig for sig, sb in signatures if 0 <= b[1] - sb[3] < 3 * lh and _x_overlap(sb, b) > 0), None)
+        if owner is not None and ht.text:
+            owner.signer_name = ht.text
             continue
 
         # signature: under a printed "(Ký, họ tên)" style line
@@ -92,8 +99,11 @@ def build_ink_elements(
                 if ln.bbox[1] >= b[3] - lh and ln.bbox[1] - b[3] < 5 * lh and _x_overlap(ln.bbox, b) > 0 and not is_signature_anchor(ln.text)
             ]
             name = min(below, key=lambda ln: ln.bbox[1]).text if below else None
-            elements.append(Element(type=ElementType.SIGNATURE, signer_name=name, **base))
+            sig = Element(type=ElementType.SIGNATURE, signer_name=name, **base)
+            elements.append(sig)
+            signatures.append((sig, b))
             continue
+
 
         # form field: printed label on the same row, to the left
         cy = (b[1] + b[3]) / 2
@@ -102,6 +112,7 @@ def build_ink_elements(
             for j, ln in enumerate(lines)
             if j not in consumed
             and ln.bbox[2] <= b[0] + 0.5 * lh
+            and b[0] - ln.bbox[2] <= 0.3 * width
             and (b[1] <= (ln.bbox[1] + ln.bbox[3]) / 2 <= b[3] or ln.bbox[1] <= cy <= ln.bbox[3])
         ]
         if candidates and ht.text:

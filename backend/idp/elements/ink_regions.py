@@ -108,10 +108,30 @@ def find_ink_blobs(
             host = next((m for m in merged if containment(tuple(b), tuple(m)) >= 0.8), None)
             if host is None:
                 merged.append(b)
+        color_blobs: list[InkBlob] = []
         for x0, y0, x1, y1 in merged:
             if any(containment((x0, y0, x1, y1), ib) >= 0.6 for ib in ignore_boxes):
                 continue
             ink = mask[y0:y1, x0:x1].astype(bool)
             kind, shape = classify(ink, line_height)
-            blobs.append(InkBlob(kind=kind, color=color, bbox=(int(x0), int(y0), int(x1), int(y1)), shape=shape))
+            color_blobs.append(InkBlob(kind=kind, color=color, bbox=(int(x0), int(y0), int(x1), int(y1)), shape=shape))
+        blobs.extend(_merge_rows(color_blobs, line_height))
     return blobs
+
+
+def _merge_rows(blobs: list[InkBlob], line_height: float) -> list[InkBlob]:
+    """Join handwriting pieces on one row (letters in comb boxes, words split by a printed rule)."""
+    hand = sorted((b for b in blobs if b.kind == InkKind.HANDWRITING), key=lambda b: b.bbox[0])
+    others = [b for b in blobs if b.kind != InkKind.HANDWRITING]
+    out: list[InkBlob] = []
+    for b in hand:
+        for o in out:
+            ox0, oy0, ox1, oy1 = o.bbox
+            x0, y0, x1, y1 = b.bbox
+            overlap = min(oy1, y1) - max(oy0, y0)
+            if overlap >= 0.5 * min(oy1 - oy0, y1 - y0) and x0 - ox1 < 3 * line_height and max(oy1 - oy0, y1 - y0) < 3 * line_height:
+                o.bbox = (min(ox0, x0), min(oy0, y0), max(ox1, x1), max(oy1, y1))
+                break
+        else:
+            out.append(InkBlob(kind=b.kind, color=b.color, bbox=b.bbox, shape=b.shape))
+    return others + out

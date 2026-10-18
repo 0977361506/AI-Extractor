@@ -61,3 +61,21 @@ def test_large_red_scribble_near_signature_line_is_a_stamp():
     blobs = [InkBlob(InkKind.HANDWRITING, "red", (120, 640, 380, 900))]
     els, _ = build_ink_elements(blobs, [HandwrittenText("", 0.0)], lines, W, H, line_height=30)
     assert els[0].type == ElementType.STAMP
+
+
+def test_handwritten_name_under_signature_is_signer_name():
+    lines = [L("(Ký, ghi rõ họ tên)", 700, 600, 900, 630)]
+    blobs = [
+        InkBlob(InkKind.HANDWRITING, "blue", (700, 650, 900, 720)),  # signature scribble
+        InkBlob(InkKind.HANDWRITING, "blue", (720, 740, 880, 770)),  # handwritten name below
+    ]
+    texts = [HandwrittenText("", 0.1), HandwrittenText("Lê Hoàng Minh", 0.8)]
+    els, _ = build_ink_elements(blobs, texts, lines, W, H, line_height=30)
+    assert len(els) == 1 and els[0].type == ElementType.SIGNATURE and els[0].signer_name == "Lê Hoàng Minh"
+
+
+def test_label_too_far_left_is_not_paired():
+    lines = [L("NHẬN", 50, 700, 120, 730)]
+    blobs = [InkBlob(InkKind.HANDWRITING, "blue", (700, 695, 900, 735))]
+    els, consumed = build_ink_elements(blobs, [HandwrittenText("ghi chú", 0.8)], lines, W, H, line_height=30)
+    assert els[0].type == ElementType.HANDWRITTEN_NOTE and not consumed

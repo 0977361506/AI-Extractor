@@ -72,3 +72,12 @@ def test_yellow_highlighter_becomes_background_keeping_text_and_rulings():
     assert ocr[15, 150] > 225
     assert ocr[24, 50] < 90
     assert ocr[30, 150] < 160
+
+
+def test_pale_stamp_ink_is_red():
+    img = np.full((40, 100, 3), WHITE, np.uint8)
+    img[10:30, 10:90] = (172, 122, 118)  # pale scanned stamp ink (S ~ 80)
+    img[10:30, 50:90] = (178, 138, 128)  # paler edge (S ~ 72)
+    res = separate_inks(img)
+    assert res.masks["red"][20, 30] and res.masks["red"][20, 70]
+    assert res.ocr_gray[20, 30] > 230
