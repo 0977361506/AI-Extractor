@@ -1,0 +1,57 @@
+[project]
+name = "idp"
+version = "0.1.0"
+description = "Banking-grade Intelligent Document Processing engine"
+requires-python = ">=3.13"
+dependencies = [
+  "pydantic==2.10.6",
+  "pydantic-settings==2.16.0",
+  "numpy==2.5.1",
+  "pillow==12.3.0",
+  "opencv-python-headless==5.0.0.93",
+  "pypdfium2==5.12.1",
+  "onnxruntime==1.20.1",
+  "rapidocr==3.10.0",
+  "torch==2.14.1",
+  "torchvision==0.29.1",
+  "transformers==4.57.6",
+  "huggingface_hub==0.36.2",
+  "einops==0.8.2",
+  "gdown==6.4.2",
+  "pyyaml",
+  "requests",
+  "tqdm",
+  "typer==0.26.8",
+  "orjson==3.11.2",
+  "rapidfuzz",
+  "httpx==0.28.1",
+  "fastapi==0.141.1",
+  "uvicorn==0.35.0",
+  "sse-starlette==3.0.2",
+  "python-multipart==0.0.20",
+  "python-docx==1.2.0",
+  "python-pptx==1.0.2",
+  "beautifulsoup4==4.13.5",
+  "lxml==6.0.2",
+  "openpyxl==3.1.5",
+  "python-calamine",
+  "apted",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "pytest-asyncio==1.4.0", "reportlab"]
+
+[project.scripts]
+idp = "idp.cli:app"
+
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["idp*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = ["slow: needs downloaded ML models (deselect with -m 'not slow')"]

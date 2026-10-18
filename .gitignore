@@ -8,3 +8,6 @@ eval/reports/
 *.sqlite
 *.db
 .env
+*.egg-info/
+models/
+.pytest_cache/
