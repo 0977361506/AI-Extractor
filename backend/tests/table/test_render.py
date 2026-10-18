@@ -51,3 +51,14 @@ def test_markdown_escapes_pipes_and_newlines():
 
 def test_header_row_count():
     assert header_row_count(_cells()) == 2
+
+
+def test_markdown_body_colspan_text_only_in_first_cell():
+    cells = [
+        TableCell(row=0, col=0, text="Hạng mục", is_header=True),
+        TableCell(row=0, col=1, text="Thành tiền", is_header=True),
+        TableCell(row=0, col=2, text="Ghi chú", is_header=True),
+        TableCell(row=1, col=0, colspan=2, text="TỔNG CỘNG"),
+        TableCell(row=1, col=2, text="929.940.000"),
+    ]
+    assert cells_to_markdown(cells).splitlines()[2] == "| TỔNG CỘNG |  | 929.940.000 |"

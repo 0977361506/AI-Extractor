@@ -31,8 +31,27 @@ def _radial(ink: np.ndarray) -> np.ndarray:
     return np.sqrt(((xx + 0.5 - w / 2) / (w / 2)) ** 2 + ((yy + 0.5 - h / 2) / (h / 2)) ** 2)
 
 
+def _upright(ink: np.ndarray) -> np.ndarray:
+    """Rotate the blob so its minimum-area rectangle is axis aligned (handles tilted stamps)."""
+    pts = cv2.findNonZero(ink.astype(np.uint8))
+    if pts is None:
+        return ink
+    (cx, cy), (rw, rh), angle = cv2.minAreaRect(pts)
+    if rw < rh:
+        angle, rw, rh = angle - 90, rh, rw
+    if abs(angle) < 1.0:
+        return ink
+    m = cv2.getRotationMatrix2D((cx, cy), angle, 1.0)
+    m[0, 2] += rw / 2 - cx
+    m[1, 2] += rh / 2 - cy
+    out = cv2.warpAffine(ink.astype(np.uint8), m, (max(1, int(rw)), max(1, int(rh))), flags=cv2.INTER_NEAREST)
+    return out > 0
+
+
 def _rectangle_outline(ink: np.ndarray) -> bool:
     h, w = ink.shape
+    if min(h, w) < 6:
+        return False
     b = max(3, int(0.12 * min(w, h)))
     edges = [ink[:b].any(axis=0), ink[-b:].any(axis=0), ink[:, :b].any(axis=1), ink[:, -b:].any(axis=1)]
     return all(e.mean() >= 0.6 for e in edges)
@@ -41,7 +60,7 @@ def _rectangle_outline(ink: np.ndarray) -> bool:
 def classify(ink: np.ndarray, line_height: float) -> tuple[InkKind, str | None]:
     h, w = ink.shape
     aspect = w / max(h, 1)
-    if min(w, h) >= 2 * line_height and 0.3 <= aspect <= 3.5 and ink.any():
+    if min(w, h) >= line_height and max(w, h) >= 3 * line_height and 0.15 <= aspect <= 6.0 and ink.any():
         r = _radial(ink)
         ring = float(((r >= 0.75) & (r <= 1.12)).mean())
         inner = float((r < 0.7).mean())
@@ -50,14 +69,23 @@ def classify(ink: np.ndarray, line_height: float) -> tuple[InkKind, str | None]:
                 return InkKind.STAMP, "round"
             if inner < 0.08:
                 return InkKind.MARK, "ellipse"
-    if min(w, h) >= 1.5 * line_height and _rectangle_outline(ink):
-        b = max(3, int(0.12 * min(w, h)))
-        inner = ink[b:-b, b:-b].sum() / max(ink.sum(), 1)
+    rect = _upright(ink)
+    rh, rw = rect.shape
+    if min(rw, rh) >= 1.5 * line_height and _rectangle_outline(rect):
+        b = max(3, int(0.12 * min(rw, rh)))
+        inner = rect[b:-b, b:-b].sum() / max(rect.sum(), 1)
         return (InkKind.STAMP if inner >= 0.08 else InkKind.MARK), "rectangle"
     return InkKind.HANDWRITING, None
 
 
-def find_ink_blobs(masks: dict[str, np.ndarray], line_height: float, colors: tuple[str, ...] = ("red", "blue")) -> list[InkBlob]:
+def find_ink_blobs(
+    masks: dict[str, np.ndarray],
+    line_height: float,
+    colors: tuple[str, ...] = ("red", "blue"),
+    ignore_boxes: list[tuple[float, float, float, float]] | None = None,
+) -> list[InkBlob]:
+    """``ignore_boxes``: areas where coloured ink is content, not annotation (charts, checkboxes)."""
+    ignore_boxes = ignore_boxes or []
     blobs: list[InkBlob] = []
     min_ink = 0.3 * line_height * line_height
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (max(3, int(1.2 * line_height)), max(3, int(0.5 * line_height))))
@@ -81,6 +109,8 @@ def find_ink_blobs(masks: dict[str, np.ndarray], line_height: float, colors: tup
             if host is None:
                 merged.append(b)
         for x0, y0, x1, y1 in merged:
+            if any(containment((x0, y0, x1, y1), ib) >= 0.6 for ib in ignore_boxes):
+                continue
             ink = mask[y0:y1, x0:x1].astype(bool)
             kind, shape = classify(ink, line_height)
             blobs.append(InkBlob(kind=kind, color=color, bbox=(int(x0), int(y0), int(x1), int(y1)), shape=shape))

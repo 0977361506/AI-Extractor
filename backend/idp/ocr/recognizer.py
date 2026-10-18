@@ -9,6 +9,16 @@ import numpy as np
 from PIL import Image
 
 
+def widen(crop: np.ndarray, ratio: float = 2.0) -> np.ndarray:
+    """Pad narrow crops (single digits) with white: VietOCR is unreliable on near-square inputs."""
+    h, w = crop.shape[:2]
+    if w >= ratio * h:
+        return crop
+    extra = int(ratio * h) - w
+    pad = ((0, 0), (extra // 2, extra - extra // 2)) + (((0, 0),) if crop.ndim == 3 else ())
+    return np.pad(crop, pad, constant_values=255)
+
+
 class VietOcrRecognizer:
     def __init__(self, config_path: Path, weights_path: Path, batch_size: int = 16, num_threads: int = 4):
         import torch
@@ -27,7 +37,7 @@ class VietOcrRecognizer:
 
     def recognize(self, crops: list[np.ndarray]) -> list[tuple[str, float]]:
         results: list[tuple[str, float]] = []
-        images = [Image.fromarray(c).convert("RGB") for c in crops]
+        images = [Image.fromarray(widen(c)).convert("RGB") for c in crops]
         for i in range(0, len(images), self.batch_size):
             batch = images[i : i + self.batch_size]
             texts, probs = self._pred.predict_batch(batch, return_prob=True)

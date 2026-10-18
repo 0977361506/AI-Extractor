@@ -51,3 +51,25 @@ def test_tiny_specks_ignored():
     m = _masks()
     m["blue"][10:13, 10:13] = True
     assert find_ink_blobs(m, line_height=30) == []
+
+
+def test_rotated_rectangular_stamp():
+    m = _masks()
+    box = cv2.boxPoints(((480, 400), (360, 120), -6)).astype(np.int32)
+    _draw(m["red"], lambda c: cv2.polylines(c, [box], True, 255, 7))
+    _draw(m["red"], lambda c: cv2.putText(c, "DA TIEP NHAN", (340, 410), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255, 3))
+    (blob,) = find_ink_blobs(m, line_height=30)
+    assert blob.kind == InkKind.STAMP and blob.shape == "rectangle"
+
+
+def test_tall_narrow_pen_circle_is_a_mark():
+    m = _masks()
+    _draw(m["red"], lambda c: cv2.ellipse(c, (500, 500), (40, 170), 0, 0, 360, 255, 4))
+    (blob,) = find_ink_blobs(m, line_height=30)
+    assert blob.kind == InkKind.MARK
+
+
+def test_blobs_inside_ignore_boxes_are_skipped():
+    m = _masks()
+    _draw(m["blue"], lambda c: cv2.rectangle(c, (100, 100), (300, 300), 255, -1))
+    assert find_ink_blobs(m, line_height=30, ignore_boxes=[(50, 50, 400, 400)]) == []

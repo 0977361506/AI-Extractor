@@ -78,3 +78,10 @@ def test_checkbox_regions_are_skipped_and_picture_keeps_text():
     els = build_elements(1, W, H, regions, lines, tables={}, extra=[], review_threshold=0.8)
     assert [e.type for e in els] == [ElementType.FIGURE]
     assert els[0].text == "Bắt đầu"
+
+
+def test_long_section_header_is_demoted_to_paragraph():
+    regions = [LayoutRegion("section_header", 0.9, (50, 200, 950, 240))]
+    text = "Bằng chữ: Chín trăm hai mươi chín triệu chín trăm bốn mươi nghìn đồng chẵn."
+    (el,) = build_elements(1, W, H, regions, [L(text, 60, 205, 940, 235)], tables={}, extra=[], review_threshold=0.8)
+    assert el.type == ElementType.PARAGRAPH

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
+import cv2
 import numpy as np
 
 from idp.core.ast import TableCell
@@ -20,7 +22,7 @@ class OcrLine:
     quad: np.ndarray | None = None
 
 
-def segment_text_lines(img: np.ndarray, line_height: float, ink_threshold: int = 150) -> list[tuple[int, int, int, int]]:
+def segment_text_lines(img: np.ndarray, line_height: float, ink_threshold: int = 185) -> list[tuple[int, int, int, int]]:
     """Split a (cell) image into text-line bands via row projection. Returns ``(y0, y1, x0, x1)``."""
     ink = img < ink_threshold
     if not ink.any():
@@ -57,17 +59,85 @@ def segment_text_lines(img: np.ndarray, line_height: float, ink_threshold: int =
                     merged = True
                     break
     segments = []
+    gap_split = 0.8 * line_height
     for a, b in runs:
         band = ink[a:b]
         if b - a < 0.3 * line_height or band.sum() < 0.5 * line_height:
             continue
         cols = np.nonzero(band.any(axis=0))[0]
-        segments.append((a, b, int(cols[0]), int(cols[-1]) + 1))
+        # split the band at wide horizontal gaps; drop specks / slivers
+        groups: list[list[int]] = [[int(cols[0]), int(cols[0])]]
+        for c in cols[1:]:
+            if c - groups[-1][1] > gap_split:
+                groups.append([int(c), int(c)])
+            else:
+                groups[-1][1] = int(c)
+        for c0, c1 in groups:
+            part = band[:, c0 : c1 + 1]
+            rows_ink = np.nonzero(part.any(axis=1))[0]
+            h = rows_ink[-1] - rows_ink[0] + 1
+            w = c1 - c0 + 1
+            if part.sum() < 25 or (h < 0.45 * line_height and w < 0.4 * line_height):
+                continue
+            segments.append((a + int(rows_ink[0]), a + int(rows_ink[-1]) + 1, c0, c1 + 1))
     return segments
 
 
+_FORMULA_MISREAD = re.compile(r"\((\s*\d{2,3}\s*)[-–−](\s*\d{2,3}(?:\s*[+\-–−]\s*\d{2,3})+\s*)\)")
+_DATE_MISREAD = re.compile(r"^(\d{1,2})[/\-.](\d{1,2})[1lI|](\d{4})$")
+
+
+def repair_cell_text(text: str) -> str:
+    """Fix systematic OCR slips: '=' read as '-' in BCTC code formulas, '/' read as '1' in dates."""
+    text = _FORMULA_MISREAD.sub(lambda m: f"({m.group(1).strip()} = {m.group(2).strip()})", text)
+    m = _DATE_MISREAD.match(text.strip())
+    if m and int(m.group(2)) <= 12:
+        text = f"{m.group(1)}/{m.group(2)}/{m.group(3)}"
+    return text
+
+
+def sanitize_ocr(text: str, confidence: float) -> tuple[str, float]:
+    """Reject degenerate recogniser output (the same token repeated, typical on blank / sparse crops)."""
+    tokens = text.split()
+    if len(tokens) >= 4:
+        run = best = 1
+        for a, b in zip(tokens, tokens[1:]):
+            run = run + 1 if a.lower() == b.lower() else 1
+            best = max(best, run)
+        if best >= 3:
+            return "", 0.0
+    return text, confidence
+
+
+def drop_empty_lines(cells: list[TableCell]) -> list[TableCell]:
+    """Remove grid rows / columns whose cells are all empty (spurious rulings) and renumber."""
+    if not cells:
+        return cells
+    n_rows = max(c.row + c.rowspan for c in cells)
+    n_cols = max(c.col + c.colspan for c in cells)
+    filled_rows = {r for c in cells if c.text.strip() for r in range(c.row, c.row + c.rowspan)}
+    filled_cols = {k for c in cells if c.text.strip() for k in range(c.col, c.col + c.colspan)}
+    keep_rows = [r for r in range(n_rows) if r in filled_rows]
+    keep_cols = [k for k in range(n_cols) if k in filled_cols]
+    if len(keep_rows) == n_rows and len(keep_cols) == n_cols:
+        return cells
+    rmap = {r: i for i, r in enumerate(keep_rows)}
+    cmap = {k: i for i, k in enumerate(keep_cols)}
+    out = []
+    for c in cells:
+        rows = [rmap[r] for r in range(c.row, c.row + c.rowspan) if r in rmap]
+        cols = [cmap[k] for k in range(c.col, c.col + c.colspan) if k in cmap]
+        if not rows or not cols:
+            continue
+        out.append(c.model_copy(update={"row": rows[0], "col": cols[0], "rowspan": len(rows), "colspan": len(cols)}))
+    return out
+
+
 def _finalize(cells: list[TableCell]) -> list[TableCell]:
-    """Header inference + numeric clean-up of numeric columns."""
+    """Repair text, drop empty grid lines, infer header rows, clean numeric columns."""
+    for c in cells:
+        c.text = repair_cell_text(c.text)
+    cells = drop_empty_lines(cells)
     if not cells:
         return cells
     n_cols = max(c.col + c.colspan for c in cells)
@@ -87,6 +157,13 @@ def _finalize(cells: list[TableCell]) -> list[TableCell]:
     return cells
 
 
+def _weighted(parts: list[tuple[str, float]]) -> float:
+    if not parts:
+        return 1.0
+    total = sum(max(1, len(t)) for t, _ in parts)
+    return round(sum(p * max(1, len(t)) for t, p in parts) / total, 4)
+
+
 def build_ruled_table(
     gray: np.ndarray,
     offset: tuple[int, int],
@@ -94,14 +171,19 @@ def build_ruled_table(
     page_h: int,
     line_height: float,
     recognizer,
+    presence_gray: np.ndarray | None = None,
 ) -> list[TableCell] | None:
-    """``gray`` is the table crop (OCR image); ``offset`` its top-left in page pixels."""
-    grid = detect_grid(gray, line_height)
+    """``gray`` is the table crop (OCR image); ``offset`` its top-left in page pixels.
+
+    ``presence_gray`` (same crop before ink removal) keeps rulings continuous where pen strokes crossed them.
+    """
+    grid = detect_grid(gray, line_height, presence_gray=presence_gray)
     if grid is None:
         return None
     horiz, vert = ruling_masks(gray, line_height)
     clean = gray.copy()
-    clean[(horiz > 0) | (vert > 0)] = 255
+    rulings = cv2.dilate(((horiz > 0) | (vert > 0)).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)))
+    clean[rulings > 0] = 255
     t = max(3, int(line_height / 6))
     pad = 4
     crops: list[np.ndarray] = []
@@ -115,8 +197,8 @@ def build_ruled_table(
             owners.append(idx)
     results = recognizer.recognize(crops) if crops else []
     texts: dict[int, list[tuple[str, float]]] = {}
-    for idx, res in zip(owners, results):
-        texts.setdefault(idx, []).append(res)
+    for idx, (text, prob) in zip(owners, results):
+        texts.setdefault(idx, []).append(sanitize_ocr(text, prob))
     ox, oy = offset
     cells = []
     for idx, cell in enumerate(grid.cells):
@@ -129,7 +211,7 @@ def build_ruled_table(
                 rowspan=cell.rowspan,
                 colspan=cell.colspan,
                 text=" ".join(p[0] for p in parts if p[0]).strip(),
-                confidence=min((p[1] for p in parts), default=1.0),
+                confidence=_weighted(parts),
                 bbox=normalize_bbox((x0 + ox, y0 + oy, x1 + ox, y1 + oy), page_w, page_h),
             )
         )

@@ -40,3 +40,27 @@ def remove_speckles(gray: np.ndarray, max_area: int = 30, keep_radius: int = 15,
     out = gray.copy()
     out[drop[labels] & (binary > 0)] = 255
     return out
+
+
+def remove_streaks(gray: np.ndarray, coverage: float = 0.9, max_width: int = 6, threshold: int = 215) -> np.ndarray:
+    """Whiten thin scanner streaks / fold lines that run (almost) the full page height or width.
+
+    Table rulings never span the whole page, so they survive.
+    """
+    h, w = gray.shape
+    dark = (gray < threshold).astype(np.uint8)
+    out = gray.copy()
+    for axis, length in ((0, h), (1, w)):
+        kernel = (1, int(length * coverage)) if axis == 0 else (int(length * coverage), 1)
+        lines = cv2.morphologyEx(dark, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, kernel))
+        if not lines.any():
+            continue
+        n, labels, stats, _ = cv2.connectedComponentsWithStats(lines, connectivity=8)
+        for i in range(1, n):
+            thickness = stats[i, cv2.CC_STAT_WIDTH] if axis == 0 else stats[i, cv2.CC_STAT_HEIGHT]
+            if thickness <= max_width:
+                band = labels == i
+                band = cv2.dilate(band.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))) > 0
+                # only whiten the streak itself, not dark text crossing it
+                out[band & (gray >= 60)] = 255
+    return out

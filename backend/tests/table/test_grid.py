@@ -44,3 +44,20 @@ def test_returns_none_without_ruling():
     img = np.full((300, 300), 255, np.uint8)
     cv2.putText(img, "no lines here", (20, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, 0, 2)
     assert detect_grid(img, line_height=30) is None
+
+
+def test_noise_band_below_a_line_does_not_shift_it():
+    img = _draw_table()
+    for x in range(30, 600, 90):  # band of short horizontal dashes right below y=220
+        for y in range(232, 262, 4):
+            img[y, x : x + 70] = 120
+    grid = detect_grid(img, line_height=30)
+    assert any(abs(y - 220) <= 3 for y in grid.ys)
+
+
+def test_aligned_glyph_strokes_are_not_a_column():
+    img = _draw_table()
+    for y0 in (135, 235):  # 40px strokes at the same x inside two rows (like tall glyphs)
+        img[y0 : y0 + 40, 110:113] = 0
+    grid = detect_grid(img, line_height=30)
+    assert grid.n_cols == 3

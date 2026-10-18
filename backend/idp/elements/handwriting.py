@@ -34,6 +34,13 @@ def infer_value_type(value: str) -> str:
     return "text"
 
 
+_SIGN_ANCHOR = re.compile(r"\(\s*ký|ký\s*,|ký\s+(và\s+)?(ghi|họ|tên)|ký tên|chữ ký", re.IGNORECASE)
+
+
+def is_signature_anchor(text: str) -> bool:
+    return bool(_SIGN_ANCHOR.search(text))
+
+
 def _x_overlap(a, b) -> float:
     return min(a[2], b[2]) - max(a[0], b[0])
 
@@ -71,15 +78,18 @@ def build_ink_elements(
             (
                 ln
                 for ln in lines
-                if "ký" in ln.text.lower() and ln.bbox[3] <= b[1] + lh and b[1] - ln.bbox[3] < 4 * lh and _x_overlap(ln.bbox, b) > 0
+                if is_signature_anchor(ln.text) and ln.bbox[3] <= b[1] + lh and b[1] - ln.bbox[3] < 4 * lh and _x_overlap(ln.bbox, b) > 0
             ),
             None,
         )
+        if sign_line is not None and blob.color == "red" and min(b[2] - b[0], b[3] - b[1]) >= 3 * lh:
+            elements.append(Element(type=ElementType.STAMP, text=ht.text, color=blob.color, shape="unknown", **base))
+            continue
         if sign_line is not None:
             below = [
                 ln
                 for ln in lines
-                if ln.bbox[1] >= b[3] - lh and ln.bbox[1] - b[3] < 5 * lh and _x_overlap(ln.bbox, b) > 0 and "ký" not in ln.text.lower()
+                if ln.bbox[1] >= b[3] - lh and ln.bbox[1] - b[3] < 5 * lh and _x_overlap(ln.bbox, b) > 0 and not is_signature_anchor(ln.text)
             ]
             name = min(below, key=lambda ln: ln.bbox[1]).text if below else None
             elements.append(Element(type=ElementType.SIGNATURE, signer_name=name, **base))

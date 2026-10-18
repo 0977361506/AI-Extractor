@@ -87,3 +87,58 @@ def test_borderless_table_from_lines():
     cells = build_borderless_table(lines, page_w=1000, page_h=1000)
     grid = {(c.row, c.col): c.text for c in cells}
     assert grid == {(0, 0): "Khoản mục", (0, 1): "Số tiền", (1, 0): "Lương", (1, 1): "620", (2, 0): "Thưởng", (2, 1): "210"}
+
+
+def test_segments_split_far_apart_words_and_drop_specks():
+    img = np.full((60, 600), 255, np.uint8)
+    img[25:28, 15:18] = 30  # speck far left
+    _text_block(img, 300, 15, 120)  # the number
+    _text_block(img, 470, 15, 60)  # another word after a big gap
+    segs = segment_text_lines(img, line_height=30)
+    assert len(segs) == 2
+    assert segs[0][2] >= 290 and segs[1][2] >= 460
+
+
+def test_degenerate_repeated_output_is_rejected():
+    from idp.table.builder import sanitize_ocr
+
+    assert sanitize_ocr("STRANSKING THE THI THI THI THỊ THỊ THỊ THỊ", 0.3) == ("", 0.0)
+    assert sanitize_ocr("Tổng cộng", 0.9) == ("Tổng cộng", 0.9)
+
+
+def test_formula_and_date_repairs():
+    from idp.table.builder import repair_cell_text
+
+    assert repair_cell_text("3. Doanh thu thuần (10 - 01 - 02)") == "3. Doanh thu thuần (10 = 01 - 02)"
+    assert repair_cell_text("14. Tổng (50 - 30 + 40)") == "14. Tổng (50 = 30 + 40)"
+    assert repair_cell_text("05/0712026") == "05/07/2026"
+    assert repair_cell_text("12/07/2026") == "12/07/2026"
+
+
+def test_empty_rows_and_columns_are_dropped():
+    from idp.core.ast import TableCell
+    from idp.table.builder import drop_empty_lines
+
+    cells = [
+        TableCell(row=0, col=0, text=""), TableCell(row=0, col=1, text=""), TableCell(row=0, col=2, text=""),
+        TableCell(row=1, col=0, text="a"), TableCell(row=1, col=1, text=""), TableCell(row=1, col=2, text="b"),
+        TableCell(row=2, col=0, text="c"), TableCell(row=2, col=1, text=""), TableCell(row=2, col=2, text="d"),
+    ]
+    out = drop_empty_lines(cells)
+    assert sorted((c.row, c.col, c.text) for c in out) == [(0, 0, "a"), (0, 1, "b"), (1, 0, "c"), (1, 1, "d")]
+
+
+def test_faint_gray_digit_is_segmented():
+    img = np.full((80, 70), 250, np.uint8)
+    img[25:55, 30:34] = 140  # light-gray printed "1"
+    assert len(segment_text_lines(img, line_height=34)) == 1
+
+
+def test_ruling_broken_by_pen_stroke_is_restored_from_presence_image():
+    img = _ruled_table_img()
+    presence = img.copy()
+    img[75:86, 290:312] = 255  # the ink-removal step erased the ruling where a pen crossed it
+    from idp.table.grid import detect_grid
+
+    grid = detect_grid(img, 30, presence_gray=presence)
+    assert len(grid.cells) == 6

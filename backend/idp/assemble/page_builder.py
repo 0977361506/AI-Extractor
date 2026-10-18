@@ -89,6 +89,8 @@ def build_elements(
         text = join_lines(members)
         if not text and type_ != ElementType.FIGURE:
             return
+        if type_ in (ElementType.HEADING, ElementType.TITLE) and len(text.split()) > 12:
+            type_ = ElementType.PARAGRAPH
         el = Element(
             element_id="",
             type=type_,

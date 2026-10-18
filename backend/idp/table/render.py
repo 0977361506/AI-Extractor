@@ -84,8 +84,18 @@ def header_labels(cells: list[TableCell]) -> list[str]:
     return labels
 
 
-def cells_to_markdown(cells: list[TableCell], body_rows: list[int] | None = None) -> str:
+def _body_grid(cells: list[TableCell]) -> list[list[str]]:
+    """Like ``expand_grid`` but a horizontal span keeps its text only in its first column."""
     grid = expand_grid(cells)
+    for c in cells:
+        for r in range(c.row, c.row + c.rowspan):
+            for k in range(c.col + 1, c.col + c.colspan):
+                grid[r][k] = ""
+    return grid
+
+
+def cells_to_markdown(cells: list[TableCell], body_rows: list[int] | None = None) -> str:
+    grid = _body_grid(cells)
     if not grid:
         return ""
     n_header = header_row_count(cells)

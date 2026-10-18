@@ -47,3 +47,17 @@ def test_free_note_and_stamp_and_signature():
     assert stamp.text == "MST 0109876543" and stamp.color == "red" and stamp.shape == "round"
     mark = next(e for e in els if e.type == ElementType.HANDWRITTEN_NOTE and e.text == "")
     assert mark.description == "Khoanh tròn đánh dấu"
+
+
+def test_title_containing_dang_ky_is_not_a_signature_anchor():
+    lines = [L("PHIẾU ĐĂNG KÝ SỬ DỤNG DỊCH VỤ", 300, 100, 700, 140)]
+    blobs = [InkBlob(InkKind.HANDWRITING, "blue", (350, 180, 650, 220))]
+    els, _ = build_ink_elements(blobs, [HandwrittenText("ghi chú", 0.8)], lines, W, H, line_height=30)
+    assert els[0].type == ElementType.HANDWRITTEN_NOTE
+
+
+def test_large_red_scribble_near_signature_line_is_a_stamp():
+    lines = [L("(Ký, ghi rõ họ tên, đóng dấu)", 100, 600, 400, 630)]
+    blobs = [InkBlob(InkKind.HANDWRITING, "red", (120, 640, 380, 900))]
+    els, _ = build_ink_elements(blobs, [HandwrittenText("", 0.0)], lines, W, H, line_height=30)
+    assert els[0].type == ElementType.STAMP
