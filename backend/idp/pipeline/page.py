@@ -64,6 +64,14 @@ def _line_height(quads: list[np.ndarray], default: float) -> float:
     return float(statistics.median(hs)) if len(hs) >= 5 else default
 
 
+def accept_ink_text(text: str, confidence: float, min_conf: float) -> bool:
+    """Digit strings (comb boxes, dates, phone numbers) get a lower bar: the recogniser is unsure but right."""
+    compact = "".join(text.split())
+    if len(compact) >= 6 and sum(c.isdigit() for c in compact) >= 0.8 * len(compact):
+        return confidence >= min(min_conf, 0.3)
+    return confidence >= min_conf
+
+
 def _ink_text(gray: np.ndarray, mask: np.ndarray, box: PixelBox, models, min_conf: float) -> HandwrittenText:
     """Read coloured ink: keep only that ink (mask grown to its anti-aliased edges), detect lines, recognise."""
     x0, y0, x1, y1 = (int(v) for v in box)
@@ -85,9 +93,10 @@ def _ink_text(gray: np.ndarray, mask: np.ndarray, box: PixelBox, models, min_con
         return HandwrittenText("", 0.0)
     total = sum(len(t) for t, _ in results)
     conf = sum(p * len(t) for t, p in results) / total
-    if conf < min_conf:
+    text = " ".join(t for t, _ in results)
+    if not accept_ink_text(text, conf, min_conf):
         return HandwrittenText("", round(conf, 4))
-    return HandwrittenText(" ".join(t for t, _ in results), round(conf, 4))
+    return HandwrittenText(text, round(conf, 4))
 
 
 def process_page(

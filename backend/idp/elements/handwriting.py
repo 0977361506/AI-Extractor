@@ -18,6 +18,17 @@ class HandwrittenText:
     confidence: float
 
 
+def normalize_comb_value(value: str, label: str = "") -> str:
+    """Digits written one per comb box come back space separated: join them; format dates (ddmmyyyy)."""
+    tokens = value.split()
+    if len(tokens) >= 4 and all(len(t) == 1 and t.isdigit() for t in tokens):
+        value = "".join(tokens)
+    compact = value.replace(" ", "")
+    if "ngày" in label.lower() and re.fullmatch(r"\d{8}", compact):
+        return f"{compact[:2]}/{compact[2:4]}/{compact[4:]}"
+    return value
+
+
 def infer_value_type(value: str) -> str:
     v = value.strip()
     compact = re.sub(r"[\s.\-]", "", v)
@@ -118,11 +129,13 @@ def build_ink_elements(
         if candidates and ht.text:
             j, label_line = max(candidates, key=lambda c: c[1].bbox[2])
             consumed.add(j)
+            label = clean_question(label_line.text)
+            value = normalize_comb_value(ht.text, label)
             el = Element(
                 type=ElementType.FORM_FIELD,
-                label=clean_question(label_line.text),
-                value=ht.text,
-                value_type=infer_value_type(ht.text),
+                label=label,
+                value=value,
+                value_type=infer_value_type(value),
                 bbox_label=norm(label_line.bbox),
                 bbox_value=norm(b),
                 is_handwritten=True,
@@ -137,7 +150,7 @@ def build_ink_elements(
         prev = fields[-1] if fields else None
         if prev is not None and ht.text and prev.bbox_value is not None:
             pv = (prev.bbox_value[0] * width, prev.bbox_value[1] * height, prev.bbox_value[2] * width, prev.bbox_value[3] * height)
-            if 0 <= b[1] - pv[3] < 2 * lh and _x_overlap(pv, b) > 0:
+            if 0 <= b[1] - pv[3] < 2.5 * lh and _x_overlap(pv, b) > 0:
                 prev.value = f"{prev.value}, {ht.text}"
                 merged_value = union_bbox([pv, b])
                 prev.bbox_value = norm(merged_value)

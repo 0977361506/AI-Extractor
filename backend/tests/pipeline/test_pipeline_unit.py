@@ -35,3 +35,11 @@ def test_overlay_draws_on_a_copy():
     assert out.shape == img.shape
     assert (img == 255).all()
     assert (out != 255).any()
+
+
+def test_ink_min_confidence_is_relaxed_for_digit_strings():
+    from idp.pipeline.page import accept_ink_text
+
+    assert accept_ink_text("0 9 1 2 3 4 5 6 7 8", 0.35, 0.6)
+    assert not accept_ink_text("Quan Gia", 0.35, 0.6)
+    assert accept_ink_text("Đã đối chiếu", 0.7, 0.6)

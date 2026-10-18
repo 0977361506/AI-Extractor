@@ -79,3 +79,27 @@ def test_label_too_far_left_is_not_paired():
     blobs = [InkBlob(InkKind.HANDWRITING, "blue", (700, 695, 900, 735))]
     els, consumed = build_ink_elements(blobs, [HandwrittenText("ghi chú", 0.8)], lines, W, H, line_height=30)
     assert els[0].type == ElementType.HANDWRITTEN_NOTE and not consumed
+
+
+def test_comb_digits_are_collapsed_and_dates_formatted():
+    from idp.elements.handwriting import normalize_comb_value
+
+    assert normalize_comb_value("1 5 0 3 1 9 9 2", "Ngày sinh") == "15/03/1992"
+    assert normalize_comb_value("0 0 1 2 3 4 5 6 7 8 9 0", "Số CCCD") == "001234567890"
+    assert normalize_comb_value("LÊ HOÀNG MINH", "Họ và tên") == "LÊ HOÀNG MINH"
+    assert normalize_comb_value("15 03 1992", "Ngày sinh") == "15/03/1992"
+
+
+def test_value_slightly_above_label_baseline_is_paired():
+    lines = [L("Mã hồ sơ:", 100, 500, 220, 530)]
+    blobs = [InkBlob(InkKind.HANDWRITING, "red", (260, 470, 520, 515))]  # written a bit higher
+    els, consumed = build_ink_elements(blobs, [HandwrittenText("HS-2026-004517", 0.85)], lines, W, H, line_height=30)
+    assert els[0].type == ElementType.FORM_FIELD and els[0].value == "HS-2026-004517"
+
+
+def test_address_second_line_with_larger_gap_is_merged():
+    lines = [L("6. Địa chỉ liên hệ:", 50, 300, 260, 330)]
+    blobs = [InkBlob(InkKind.HANDWRITING, "blue", (400, 295, 900, 335)), InkBlob(InkKind.HANDWRITING, "blue", (60, 400, 500, 435))]
+    texts = [HandwrittenText("Số 12, ngõ 45", 0.7), HandwrittenText("Q. Cầu Giấy", 0.7)]
+    els, _ = build_ink_elements(blobs, texts, lines, W, H, line_height=30)
+    assert [e.value for e in els] == ["Số 12, ngõ 45, Q. Cầu Giấy"]
