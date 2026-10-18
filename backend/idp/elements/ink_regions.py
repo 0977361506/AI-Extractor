@@ -78,6 +78,38 @@ def classify(ink: np.ndarray, line_height: float) -> tuple[InkKind, str | None]:
     return InkKind.HANDWRITING, None
 
 
+def _find_rings(mask: np.ndarray, line_height: float) -> list[tuple[float, float, float]]:
+    """Circular stamps (possibly overlapping handwriting / signatures) via Hough on a downscaled mask."""
+    scale = 0.5
+    small = cv2.resize(mask.astype(np.uint8) * 255, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    if small.max() == 0:
+        return []
+    blur = cv2.GaussianBlur(small, (7, 7), 1.5)
+    lh = line_height * scale
+    circles = cv2.HoughCircles(
+        blur, cv2.HOUGH_GRADIENT, dp=1.5, minDist=4 * lh, param1=80, param2=30, minRadius=int(2 * lh), maxRadius=int(7 * lh)
+    )
+    if circles is None:
+        return []
+    rings = []
+    h, w = mask.shape
+    angles = np.linspace(0, 2 * np.pi, 144, endpoint=False)
+    for cx, cy, r in circles[0]:
+        cx, cy, r = cx / scale, cy / scale, r / scale
+        hit = 0
+        for t in angles:
+            found = False
+            for k in np.linspace(0.9, 1.06, 6):
+                x, y = int(cx + k * r * np.cos(t)), int(cy + k * r * np.sin(t))
+                if 0 <= x < w and 0 <= y < h and mask[y, x]:
+                    found = True
+                    break
+            hit += found
+        if hit / len(angles) >= 0.6:
+            rings.append((float(cx), float(cy), float(r)))
+    return rings
+
+
 def find_ink_blobs(
     masks: dict[str, np.ndarray],
     line_height: float,
@@ -93,6 +125,19 @@ def find_ink_blobs(
         mask = masks[color].astype(np.uint8)
         if not mask.any():
             continue
+        ring_blobs: list[InkBlob] = []
+        for cx, cy, r in _find_rings(mask > 0, line_height):
+            box = (max(0, int(cx - 1.06 * r)), max(0, int(cy - 1.06 * r)), min(mask.shape[1], int(cx + 1.06 * r)), min(mask.shape[0], int(cy + 1.06 * r)))
+            if any(containment(box, ib) >= 0.6 for ib in ignore_boxes):
+                continue
+            yy, xx = np.ogrid[: mask.shape[0], : mask.shape[1]]
+            disk = (xx - cx) ** 2 + (yy - cy) ** 2 <= (1.06 * r) ** 2
+            inner = mask[disk & ((xx - cx) ** 2 + (yy - cy) ** 2 <= (0.75 * r) ** 2)].sum()
+            kind = InkKind.STAMP if inner >= 0.08 * max(1, mask[disk].sum()) else InkKind.MARK
+            ring_blobs.append(InkBlob(kind=kind, color=color, bbox=box, shape="round" if kind == InkKind.STAMP else "ellipse"))
+            mask = mask.copy()
+            mask[disk] = 0
+        blobs.extend(ring_blobs)
         closed = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
         n, labels, stats, _ = cv2.connectedComponentsWithStats(closed, connectivity=8)
         comps = []

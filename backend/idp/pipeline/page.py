@@ -68,7 +68,7 @@ def accept_ink_text(text: str, confidence: float, min_conf: float) -> bool:
     """Digit strings (comb boxes, dates, phone numbers) get a lower bar: the recogniser is unsure but right."""
     compact = "".join(text.split())
     if len(compact) >= 6 and sum(c.isdigit() for c in compact) >= 0.8 * len(compact):
-        return confidence >= min(min_conf, 0.3)
+        return confidence >= min(min_conf, 0.2)
     return confidence >= min_conf
 
 

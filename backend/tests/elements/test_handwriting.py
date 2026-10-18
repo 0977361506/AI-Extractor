@@ -103,3 +103,18 @@ def test_address_second_line_with_larger_gap_is_merged():
     texts = [HandwrittenText("Số 12, ngõ 45", 0.7), HandwrittenText("Q. Cầu Giấy", 0.7)]
     els, _ = build_ink_elements(blobs, texts, lines, W, H, line_height=30)
     assert [e.value for e in els] == ["Số 12, ngõ 45, Q. Cầu Giấy"]
+
+
+def test_value_written_well_above_dotted_line_is_paired():
+    lines = [L("Ngày tiếp nhận:", 100, 520, 260, 550)]
+    blobs = [InkBlob(InkKind.HANDWRITING, "red", (300, 480, 520, 522))]
+    els, _ = build_ink_elements(blobs, [HandwrittenText("15/10/2026", 0.8)], lines, W, H, line_height=30)
+    assert els[0].type == ElementType.FORM_FIELD and els[0].label == "Ngày tiếp nhận"
+
+
+def test_second_address_line_starting_at_left_margin_is_merged():
+    lines = [L("6. Địa chỉ liên hệ:", 50, 300, 260, 330)]
+    blobs = [InkBlob(InkKind.HANDWRITING, "blue", (400, 295, 900, 335)), InkBlob(InkKind.HANDWRITING, "blue", (60, 380, 300, 415))]
+    texts = [HandwrittenText("Số 12, ngõ 45", 0.7), HandwrittenText("Q. Cầu Giấy", 0.7)]
+    els, _ = build_ink_elements(blobs, texts, lines, W, H, line_height=30)
+    assert [e.value for e in els] == ["Số 12, ngõ 45, Q. Cầu Giấy"]

@@ -83,3 +83,15 @@ def test_comb_box_letters_on_one_row_merge_into_one_blob():
         _draw(m["blue"], lambda c, x=x: cv2.putText(c, "A", (x, 520), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255, 3))
     blobs = find_ink_blobs(m, line_height=30)
     assert len(blobs) == 1 and blobs[0].kind == InkKind.HANDWRITING
+
+
+def test_round_stamp_overlapping_handwriting_is_separated():
+    m = _masks()
+    _draw(m["blue"], lambda c: cv2.circle(c, (600, 500), 110, 255, 7))
+    _draw(m["blue"], lambda c: cv2.putText(c, "NHA TRANG", (520, 510), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255, 3))
+    _draw(m["blue"], lambda c: cv2.putText(c, "Da doi chieu OK chuyen", (60, 470), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX, 1.3, 255, 3))
+    blobs = find_ink_blobs(m, line_height=30)
+    kinds = sorted(b.kind for b in blobs)
+    assert kinds == sorted([InkKind.STAMP, InkKind.HANDWRITING])
+    hand = next(b for b in blobs if b.kind == InkKind.HANDWRITING)
+    assert hand.bbox[0] < 80 and hand.bbox[2] < 600

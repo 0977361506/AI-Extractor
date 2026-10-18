@@ -124,7 +124,11 @@ def build_ink_elements(
             if j not in consumed
             and ln.bbox[2] <= b[0] + 0.5 * lh
             and b[0] - ln.bbox[2] <= 0.3 * width
-            and (b[1] <= (ln.bbox[1] + ln.bbox[3]) / 2 <= b[3] or ln.bbox[1] <= cy <= ln.bbox[3])
+            and (
+                b[1] <= (ln.bbox[1] + ln.bbox[3]) / 2 <= b[3]
+                or ln.bbox[1] <= cy <= ln.bbox[3]
+                or abs((ln.bbox[1] + ln.bbox[3]) / 2 - cy) <= 1.2 * lh
+            )
         ]
         if candidates and ht.text:
             j, label_line = max(candidates, key=lambda c: c[1].bbox[2])
@@ -150,7 +154,8 @@ def build_ink_elements(
         prev = fields[-1] if fields else None
         if prev is not None and ht.text and prev.bbox_value is not None:
             pv = (prev.bbox_value[0] * width, prev.bbox_value[1] * height, prev.bbox_value[2] * width, prev.bbox_value[3] * height)
-            if 0 <= b[1] - pv[3] < 2.5 * lh and _x_overlap(pv, b) > 0:
+            whole = (prev.bbox_normalized[0] * width, 0, prev.bbox_normalized[2] * width, 0)
+            if 0 <= b[1] - pv[3] < 2.5 * lh and _x_overlap(whole, b) > 0:
                 prev.value = f"{prev.value}, {ht.text}"
                 merged_value = union_bbox([pv, b])
                 prev.bbox_value = norm(merged_value)
