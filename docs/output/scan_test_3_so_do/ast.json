@@ -1,0 +1,2141 @@
+{
+  "document_id": "scan_test_3_so_do",
+  "job_id": "job_4895dd48acab",
+  "status": "COMPLETED",
+  "metadata": {
+    "filename": "scan_test_3_so_do.pdf",
+    "file_type": "application/pdf",
+    "total_pages": 3,
+    "detected_charset": "UNICODE_NFC",
+    "has_red_stamp": true,
+    "processing_time_ms": 50636,
+    "vlm_invocations_count": 0,
+    "engine_versions": {
+      "layout": "docling_heron",
+      "detector": "rapidocr_ppocr_det",
+      "recognizer": "vietocr_vgg_seq2seq"
+    }
+  },
+  "pages": [
+    {
+      "page_number": 1,
+      "status": "DONE",
+      "width": 2544,
+      "height": 3553,
+      "images": {
+        "raw": "scan_test_3_so_do/pages/1_raw.jpg",
+        "display": "scan_test_3_so_do/pages/1_display.jpg",
+        "ocr": "scan_test_3_so_do/pages/1_ocr.png"
+      },
+      "orientation_applied": 0,
+      "deskew_angle": -1.01,
+      "elements": [
+        {
+          "element_id": "el_p1_001",
+          "type": "heading",
+          "reading_order": 0,
+          "bbox_normalized": [
+            0.18689,
+            0.0441,
+            0.81365,
+            0.06254
+          ],
+          "hierarchy_breadcrumb": [
+            "SƠ ĐỒ 1. QUY TRÌNH PHÊ DUYỆT ĐỂ NGHỊ THANH TOÁN"
+          ],
+          "text": "SƠ ĐỒ 1. QUY TRÌNH PHÊ DUYỆT ĐỂ NGHỊ THANH TOÁN",
+          "content_markdown": "### SƠ ĐỒ 1. QUY TRÌNH PHÊ DUYỆT ĐỂ NGHỊ THANH TOÁN",
+          "confidence_score": 0.8783,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "SƠ ĐỒ 1. QUY TRÌNH PHÊ DUYỆT ĐỂ NGHỊ THANH TOÁN",
+              "bbox": [
+                0.18472,
+                0.04183,
+                0.81736,
+                0.06351
+              ],
+              "confidence": 0.8783
+            }
+          ],
+          "level": 2,
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p1_002",
+          "type": "figure",
+          "reading_order": 1,
+          "bbox_normalized": [
+            0.0983,
+            0.08652,
+            0.87215,
+            0.9004
+          ],
+          "hierarchy_breadcrumb": [
+            "SƠ ĐỒ 1. QUY TRÌNH PHÊ DUYỆT ĐỂ NGHỊ THANH TOÁN"
+          ],
+          "text": "Bắt đầu\nNhân viên lập đề nghị thanh\ntoán kèm chứng từ\nTrưởng phòng kiểm tra hồ sơ Bổ sung\nHồ sơ hợp lệ? Không Trả lại nhân viên bổ sung hồ sơ\nCó\nKế toán trưởng soát xét\nCó\nGiá trị 5 50 triệu đồng? Giám đốc phê duyệt\nKhông\nKế toán thanh toán lập lệnh chi\nThời hạn xử lý: tối đa Thủ quỹ hoặc ngân hàng thực\n05 ngày làm việc kể hiện chuyển khoản\ntừ ngày nhận đủ hồ sơ\nLưu hồ sơ, cập nhật sổ sách\nKết thúc\nChú thích:\nĐiểm bắt đầu / kết thúc\nBước xử lý\nĐiều kiện rẽ nhánh",
+          "content_markdown": "",
+          "confidence_score": 0.8795,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "Bắt đầu",
+              "bbox": [
+                0.38958,
+                0.09627,
+                0.46111,
+                0.1119
+              ],
+              "confidence": 0.8972
+            },
+            {
+              "text": "Nhân viên lập đề nghị thanh",
+              "bbox": [
+                0.31806,
+                0.15877,
+                0.53194,
+                0.17238
+              ],
+              "confidence": 0.8903
+            },
+            {
+              "text": "toán kèm chứng từ",
+              "bbox": [
+                0.35139,
+                0.17137,
+                0.49861,
+                0.18599
+              ],
+              "confidence": 0.8987
+            },
+            {
+              "text": "Trưởng phòng kiểm tra hồ sơ",
+              "bbox": [
+                0.31597,
+                0.23488,
+                0.53681,
+                0.25302
+              ],
+              "confidence": 0.8995
+            },
+            {
+              "text": "Bổ sung",
+              "bbox": [
+                0.77847,
+                0.24395,
+                0.83889,
+                0.26058
+              ],
+              "confidence": 0.8935
+            },
+            {
+              "text": "Không",
+              "bbox": [
+                0.52431,
+                0.30645,
+                0.57708,
+                0.32359
+              ],
+              "confidence": 0.8728
+            },
+            {
+              "text": "Trả lại nhân viên bổ",
+              "bbox": [
+                0.69097,
+                0.313,
+                0.84375,
+                0.32913
+              ],
+              "confidence": 0.8859
+            },
+            {
+              "text": "Hồ sơ hợp lệ?",
+              "bbox": [
+                0.37778,
+                0.31956,
+                0.47292,
+                0.33619
+              ],
+              "confidence": 0.8886
+            },
+            {
+              "text": "sung hồ sơ",
+              "bbox": [
+                0.72153,
+                0.32661,
+                0.8125,
+                0.34325
+              ],
+              "confidence": 0.9109
+            },
+            {
+              "text": "Có",
+              "bbox": [
+                0.43542,
+                0.37198,
+                0.45972,
+                0.38609
+              ],
+              "confidence": 0.5858
+            },
+            {
+              "text": "Kế toán trưởng soát xét",
+              "bbox": [
+                0.33681,
+                0.41079,
+                0.51597,
+                0.4244
+              ],
+              "confidence": 0.8371
+            },
+            {
+              "text": "Có",
+              "bbox": [
+                0.55903,
+                0.48085,
+                0.58264,
+                0.49496
+              ],
+              "confidence": 0.5881
+            },
+            {
+              "text": "Giá trị 5 50 triệu đồng?",
+              "bbox": [
+                0.34653,
+                0.49395,
+                0.50486,
+                0.50857
+              ],
+              "confidence": 0.8186
+            },
+            {
+              "text": "Giám đốc phê duyệt",
+              "bbox": [
+                0.68958,
+                0.49294,
+                0.84653,
+                0.50907
+              ],
+              "confidence": 0.8905
+            },
+            {
+              "text": "Không",
+              "bbox": [
+                0.43194,
+                0.54385,
+                0.48125,
+                0.55998
+              ],
+              "confidence": 0.8987
+            },
+            {
+              "text": "Kế toán thanh toán lập lệnh chi",
+              "bbox": [
+                0.30694,
+                0.5872,
+                0.54514,
+                0.60181
+              ],
+              "confidence": 0.8921
+            },
+            {
+              "text": "Thời hạn xử lý: tối đa",
+              "bbox": [
+                0.11667,
+                0.65474,
+                0.25833,
+                0.66784
+              ],
+              "confidence": 0.8955
+            },
+            {
+              "text": "Thủ quỹ hoặc ngân hàng thực",
+              "bbox": [
+                0.31389,
+                0.65272,
+                0.53958,
+                0.66633
+              ],
+              "confidence": 0.8268
+            },
+            {
+              "text": "05 ngày làm việc kể",
+              "bbox": [
+                0.11806,
+                0.66532,
+                0.25694,
+                0.67994
+              ],
+              "confidence": 0.9
+            },
+            {
+              "text": "hiện chuyển khoản",
+              "bbox": [
+                0.35347,
+                0.66633,
+                0.49931,
+                0.67994
+              ],
+              "confidence": 0.9018
+            },
+            {
+              "text": "từ ngày nhận đủ hồ sơ",
+              "bbox": [
+                0.11181,
+                0.67792,
+                0.26319,
+                0.69153
+              ],
+              "confidence": 0.907
+            },
+            {
+              "text": "Lưu hồ sơ, cập nhật sổ sách",
+              "bbox": [
+                0.31736,
+                0.72581,
+                0.53264,
+                0.74194
+              ],
+              "confidence": 0.8859
+            },
+            {
+              "text": "Kết thúc",
+              "bbox": [
+                0.38819,
+                0.78478,
+                0.46597,
+                0.7999
+              ],
+              "confidence": 0.8946
+            },
+            {
+              "text": "Chú thích:",
+              "bbox": [
+                0.1,
+                0.80948,
+                0.17986,
+                0.82157
+              ],
+              "confidence": 0.8823
+            },
+            {
+              "text": "Điểm bắt đầu / kết thúc",
+              "bbox": [
+                0.16389,
+                0.82762,
+                0.32361,
+                0.84073
+              ],
+              "confidence": 0.8892
+            },
+            {
+              "text": "Bước xử lý",
+              "bbox": [
+                0.16389,
+                0.85232,
+                0.23889,
+                0.86794
+              ],
+              "confidence": 0.9022
+            },
+            {
+              "text": "Điều kiện rẽ nhánh",
+              "bbox": [
+                0.16389,
+                0.88054,
+                0.29375,
+                0.89415
+              ],
+              "confidence": 0.8779
+            }
+          ],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p1_003",
+          "type": "figure",
+          "reading_order": 2,
+          "bbox_normalized": [
+            0.10162,
+            0.87617,
+            0.15681,
+            0.90024
+          ],
+          "hierarchy_breadcrumb": [
+            "SƠ ĐỒ 1. QUY TRÌNH PHÊ DUYỆT ĐỂ NGHỊ THANH TOÁN"
+          ],
+          "text": "",
+          "content_markdown": "",
+          "confidence_score": 1.0,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        }
+      ],
+      "processing_time_ms": 15705
+    },
+    {
+      "page_number": 2,
+      "status": "DONE",
+      "width": 2577,
+      "height": 3575,
+      "images": {
+        "raw": "scan_test_3_so_do/pages/2_raw.jpg",
+        "display": "scan_test_3_so_do/pages/2_display.jpg",
+        "ocr": "scan_test_3_so_do/pages/2_ocr.png"
+      },
+      "orientation_applied": 0,
+      "deskew_angle": 1.55,
+      "elements": [
+        {
+          "element_id": "el_p2_001",
+          "type": "heading",
+          "reading_order": 0,
+          "bbox_normalized": [
+            0.29833,
+            0.04184,
+            0.6972,
+            0.05939
+          ],
+          "hierarchy_breadcrumb": [
+            "SƠ ĐỒ 2. CƠ CẤU TỔ CHỨC CÔNG TY"
+          ],
+          "text": "SƠ ĐỒ 2. CƠ CẤU TỔ CHỨC CÔNG TY",
+          "content_markdown": "### SƠ ĐỒ 2. CƠ CẤU TỔ CHỨC CÔNG TY",
+          "confidence_score": 0.8596,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "SƠ ĐỒ 2. CƠ CẤU TỔ CHỨC CÔNG TY",
+              "bbox": [
+                0.29653,
+                0.04083,
+                0.70208,
+                0.06048
+              ],
+              "confidence": 0.8596
+            }
+          ],
+          "level": 2,
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p2_002",
+          "type": "figure",
+          "reading_order": 1,
+          "bbox_normalized": [
+            0.08156,
+            0.07258,
+            0.97135,
+            0.43698
+          ],
+          "hierarchy_breadcrumb": [
+            "SƠ ĐỒ 2. CƠ CẤU TỔ CHỨC CÔNG TY"
+          ],
+          "text": "Hội đồng thành viên\nbáo cáo trực tiếp th\nBan Giám đốc Phòng Kiểm soát nội bộ\nPhó Giám đốc Kinh doanh Phó Giám đốc Kỹ thuật Phó Giám đốc Tài chính\nPhòng Bán hàng Phòng Phát triển phần mềm Phòng Kế toán\nPhòng Marketing Phòng Hạ tầng Phòng Nhân sự\nPhòng Chăm sóc khách hàng Phòng Kiểm thử Phòng Pháp chế",
+          "content_markdown": "",
+          "confidence_score": 0.8827,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "Hội đồng thành viên",
+              "bbox": [
+                0.41111,
+                0.0872,
+                0.58264,
+                0.10232
+              ],
+              "confidence": 0.9014
+            },
+            {
+              "text": "báo cáo trực tiếp th",
+              "bbox": [
+                0.63333,
+                0.13861,
+                0.73611,
+                0.15071
+              ],
+              "confidence": 0.7928
+            },
+            {
+              "text": "Ban Giám đốc",
+              "bbox": [
+                0.4375,
+                0.1497,
+                0.55625,
+                0.16482
+              ],
+              "confidence": 0.9011
+            },
+            {
+              "text": "Phòng Kiểm soát nội bộ",
+              "bbox": [
+                0.75903,
+                0.15071,
+                0.93611,
+                0.16583
+              ],
+              "confidence": 0.8932
+            },
+            {
+              "text": "Phó Giám đốc Kinh doanh",
+              "bbox": [
+                0.1,
+                0.22177,
+                0.31458,
+                0.23538
+              ],
+              "confidence": 0.8798
+            },
+            {
+              "text": "Phó Giám đốc Kỹ thuật",
+              "bbox": [
+                0.4,
+                0.22026,
+                0.59375,
+                0.2369
+              ],
+              "confidence": 0.8931
+            },
+            {
+              "text": "Phó Giám đốc Tài chính",
+              "bbox": [
+                0.68889,
+                0.22228,
+                0.88333,
+                0.23589
+              ],
+              "confidence": 0.8882
+            },
+            {
+              "text": "Phòng Phát triển phần",
+              "bbox": [
+                0.425,
+                0.29032,
+                0.59306,
+                0.30544
+              ],
+              "confidence": 0.8979
+            },
+            {
+              "text": "Phòng Bán hàng",
+              "bbox": [
+                0.15625,
+                0.29738,
+                0.28125,
+                0.3125
+              ],
+              "confidence": 0.8896
+            },
+            {
+              "text": "Phòng Kế toán",
+              "bbox": [
+                0.74097,
+                0.29738,
+                0.85417,
+                0.3125
+              ],
+              "confidence": 0.886
+            },
+            {
+              "text": "mềm",
+              "bbox": [
+                0.48542,
+                0.30292,
+                0.53125,
+                0.31905
+              ],
+              "confidence": 0.8478
+            },
+            {
+              "text": "Phòng Marketing",
+              "bbox": [
+                0.15417,
+                0.35081,
+                0.28403,
+                0.36744
+              ],
+              "confidence": 0.8977
+            },
+            {
+              "text": "Phòng Hạ tầng",
+              "bbox": [
+                0.44861,
+                0.3503,
+                0.56528,
+                0.36845
+              ],
+              "confidence": 0.8809
+            },
+            {
+              "text": "Phòng Nhân sự",
+              "bbox": [
+                0.73889,
+                0.35131,
+                0.85833,
+                0.36794
+              ],
+              "confidence": 0.8742
+            },
+            {
+              "text": "Phòng Chăm sóc khách",
+              "bbox": [
+                0.13125,
+                0.39919,
+                0.30694,
+                0.41431
+              ],
+              "confidence": 0.8873
+            },
+            {
+              "text": "hàng",
+              "bbox": [
+                0.19444,
+                0.41079,
+                0.24167,
+                0.42994
+              ],
+              "confidence": 0.9014
+            },
+            {
+              "text": "Phòng Kiểm thử",
+              "bbox": [
+                0.44792,
+                0.40625,
+                0.57014,
+                0.42137
+              ],
+              "confidence": 0.8793
+            },
+            {
+              "text": "Phòng Pháp chế",
+              "bbox": [
+                0.73611,
+                0.40575,
+                0.85972,
+                0.42188
+              ],
+              "confidence": 0.8939
+            }
+          ],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p2_003",
+          "type": "heading",
+          "reading_order": 2,
+          "bbox_normalized": [
+            0.10077,
+            0.52346,
+            0.16627,
+            0.53355
+          ],
+          "hierarchy_breadcrumb": [
+            "Ghi chú:"
+          ],
+          "text": "Ghi chú:",
+          "content_markdown": "### Ghi chú:",
+          "confidence_score": 0.862,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "Ghi chú:",
+              "bbox": [
+                0.09931,
+                0.52117,
+                0.16944,
+                0.53528
+              ],
+              "confidence": 0.862
+            }
+          ],
+          "level": 2,
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p2_004",
+          "type": "list_item",
+          "reading_order": 3,
+          "bbox_normalized": [
+            0.10111,
+            0.54039,
+            0.78729,
+            0.55268
+          ],
+          "hierarchy_breadcrumb": [
+            "Ghi chú:"
+          ],
+          "text": "- Đường liền thế hiện quan hệ quản lý trực tiếp; đường đút nét thể hiện quan hệ báo cáo chuyên môn.",
+          "content_markdown": "- Đường liền thế hiện quan hệ quản lý trực tiếp; đường đút nét thể hiện quan hệ báo cáo chuyên môn.",
+          "confidence_score": 0.8907,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "- Đường liền thế hiện quan hệ quản lý trực tiếp; đường đút nét thể hiện quan hệ báo cáo chuyên môn.",
+              "bbox": [
+                0.09931,
+                0.53831,
+                0.78889,
+                0.55292
+              ],
+              "confidence": 0.8907
+            }
+          ],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p2_005",
+          "type": "list_item",
+          "reading_order": 4,
+          "bbox_normalized": [
+            0.10155,
+            0.55482,
+            0.52975,
+            0.56657
+          ],
+          "hierarchy_breadcrumb": [
+            "Ghi chú:"
+          ],
+          "text": "- Tổng số nhân sự toàn công ty tại ngày 30/09/2026: 186 người.",
+          "content_markdown": "- Tổng số nhân sự toàn công ty tại ngày 30/09/2026: 186 người.",
+          "confidence_score": 0.723,
+          "needs_human_review": true,
+          "review_reasons": [
+            "LOW_CONFIDENCE"
+          ],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "- Tổng số nhân sự toàn công ty tại ngày 30/09/2026: 186 người.",
+              "bbox": [
+                0.10069,
+                0.55292,
+                0.53333,
+                0.56754
+              ],
+              "confidence": 0.723
+            }
+          ],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p2_006",
+          "type": "table",
+          "reading_order": 5,
+          "bbox_normalized": [
+            0.101,
+            0.58045,
+            0.58109,
+            0.66316
+          ],
+          "hierarchy_breadcrumb": [
+            "Ghi chú:"
+          ],
+          "text": "Khối | Số phòng | Nhân sự\nKinh doanh | 3 | 64\nKỹ thuật | 3 | 78\nTài chính - Hành chính | 3 | 44",
+          "content_markdown": "| Khối | Số phòng | Nhân sự |\n|---|---|---|\n| Kinh doanh | 3 | 64 |\n| Kỹ thuật | 3 | 78 |\n| Tài chính - Hành chính | 3 | 44 |",
+          "confidence_score": 0.8736,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": true,
+              "text": "Khối",
+              "bbox": [
+                0.10244,
+                0.5821,
+                0.34692,
+                0.60168
+              ],
+              "confidence": 0.707,
+              "check_failed": false
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": true,
+              "text": "Số phòng",
+              "bbox": [
+                0.34692,
+                0.5821,
+                0.46333,
+                0.60168
+              ],
+              "confidence": 0.8636,
+              "check_failed": false
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": true,
+              "text": "Nhân sự",
+              "bbox": [
+                0.46333,
+                0.5821,
+                0.57936,
+                0.60168
+              ],
+              "confidence": 0.729,
+              "check_failed": false
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": false,
+              "text": "Kinh doanh",
+              "bbox": [
+                0.10244,
+                0.60168,
+                0.34692,
+                0.6221
+              ],
+              "confidence": 0.898,
+              "check_failed": false
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": false,
+              "text": "3",
+              "numeric_value": 3.0,
+              "bbox": [
+                0.34692,
+                0.60168,
+                0.46333,
+                0.6221
+              ],
+              "confidence": 0.9332,
+              "check_failed": false
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": false,
+              "text": "64",
+              "numeric_value": 64.0,
+              "bbox": [
+                0.46333,
+                0.60168,
+                0.57936,
+                0.6221
+              ],
+              "confidence": 0.889,
+              "check_failed": false
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": false,
+              "text": "Kỹ thuật",
+              "bbox": [
+                0.10244,
+                0.6221,
+                0.34692,
+                0.64224
+              ],
+              "confidence": 0.8981,
+              "check_failed": false
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": false,
+              "text": "3",
+              "numeric_value": 3.0,
+              "bbox": [
+                0.34692,
+                0.6221,
+                0.46333,
+                0.64224
+              ],
+              "confidence": 0.9307,
+              "check_failed": false
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": false,
+              "text": "78",
+              "numeric_value": 78.0,
+              "bbox": [
+                0.46333,
+                0.6221,
+                0.57936,
+                0.64224
+              ],
+              "confidence": 0.9142,
+              "check_failed": false
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": false,
+              "text": "Tài chính - Hành chính",
+              "bbox": [
+                0.10244,
+                0.64224,
+                0.34692,
+                0.6621
+              ],
+              "confidence": 0.8832,
+              "check_failed": false
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": false,
+              "text": "3",
+              "numeric_value": 3.0,
+              "bbox": [
+                0.34692,
+                0.64224,
+                0.46333,
+                0.6621
+              ],
+              "confidence": 0.9336,
+              "check_failed": false
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "rowspan": 1,
+              "colspan": 1,
+              "is_header": false,
+              "text": "44",
+              "numeric_value": 44.0,
+              "bbox": [
+                0.46333,
+                0.64224,
+                0.57936,
+                0.6621
+              ],
+              "confidence": 0.9036,
+              "check_failed": false
+            }
+          ],
+          "content_html": "<table><thead><tr><th data-bbox='[0.1024,0.5821,0.3469,0.6017]' data-conf='0.71'>Khối</th><th data-bbox='[0.3469,0.5821,0.4633,0.6017]' data-conf='0.86'>Số phòng</th><th data-bbox='[0.4633,0.5821,0.5794,0.6017]' data-conf='0.73'>Nhân sự</th></tr></thead><tbody><tr><td data-bbox='[0.1024,0.6017,0.3469,0.6221]' data-conf='0.90'>Kinh doanh</td><td data-bbox='[0.3469,0.6017,0.4633,0.6221]' data-conf='0.93'>3</td><td data-bbox='[0.4633,0.6017,0.5794,0.6221]' data-conf='0.89'>64</td></tr><tr><td data-bbox='[0.1024,0.6221,0.3469,0.6422]' data-conf='0.90'>Kỹ thuật</td><td data-bbox='[0.3469,0.6221,0.4633,0.6422]' data-conf='0.93'>3</td><td data-bbox='[0.4633,0.6221,0.5794,0.6422]' data-conf='0.91'>78</td></tr><tr><td data-bbox='[0.1024,0.6422,0.3469,0.6621]' data-conf='0.88'>Tài chính - Hành chính</td><td data-bbox='[0.3469,0.6422,0.4633,0.6621]' data-conf='0.93'>3</td><td data-bbox='[0.4633,0.6422,0.5794,0.6621]' data-conf='0.90'>44</td></tr></tbody></table>",
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p2_007",
+          "type": "stamp",
+          "reading_order": 6,
+          "bbox_normalized": [
+            0.63756,
+            0.57622,
+            0.88941,
+            0.65063
+          ],
+          "hierarchy_breadcrumb": [
+            "Ghi chú:"
+          ],
+          "text": "BẢN SAO Hà Nội 12/10/2026",
+          "content_markdown": "",
+          "confidence_score": 0.8928,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "ink_vietocr",
+          "human_corrected": false,
+          "lines": [],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": [],
+          "color": "red",
+          "shape": "rectangle"
+        },
+        {
+          "element_id": "el_p2_008",
+          "type": "handwritten_note",
+          "reading_order": 7,
+          "bbox_normalized": [
+            0.10982,
+            0.68392,
+            0.38339,
+            0.69846
+          ],
+          "hierarchy_breadcrumb": [
+            "Ghi chú:"
+          ],
+          "text": "cấp nhất theo 0Đ 214/QĐ-HĐTV",
+          "content_markdown": "",
+          "confidence_score": 0.7893,
+          "needs_human_review": true,
+          "review_reasons": [
+            "HANDWRITING"
+          ],
+          "extraction_engine": "ink_vietocr",
+          "human_corrected": false,
+          "lines": [],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": [],
+          "ink_color": "blue",
+          "attached_to": "el_p2_006"
+        }
+      ],
+      "processing_time_ms": 20511
+    },
+    {
+      "page_number": 3,
+      "status": "DONE",
+      "width": 2608,
+      "height": 3597,
+      "images": {
+        "raw": "scan_test_3_so_do/pages/3_raw.jpg",
+        "display": "scan_test_3_so_do/pages/3_display.jpg",
+        "ocr": "scan_test_3_so_do/pages/3_ocr.png"
+      },
+      "orientation_applied": 0,
+      "deskew_angle": -2.07,
+      "elements": [
+        {
+          "element_id": "el_p3_001",
+          "type": "figure",
+          "reading_order": 0,
+          "bbox_normalized": [
+            0.00325,
+            0.00319,
+            1.0,
+            1.0
+          ],
+          "hierarchy_breadcrumb": [
+            "Ghi chú:"
+          ],
+          "text": "SƠ ĐỒ 3, MÔ HÌNH THỰC THỂ - QUAN HỆ (ER) HỆ THỐNG HÓA ĐƠN\nChú thích\nPK: khóa chính (primary key), FK: khóa ngoại (foreign key), 1 - N: quan hệ một - nhiều.\nMỗi hợp đồng thuộc đúng một khách hàng: một hợp đồng có thể phát sinh nhiều hóa đơn; mỏi hóa đơn gồm nhiều\ndòng chi tiết, mỗi dòng tham chiếu một sản phẩm.\nPhiên bản mô hình: v2.3 - cập nhật ngày 10/10/2026",
+          "content_markdown": "",
+          "confidence_score": 0.7948,
+          "needs_human_review": true,
+          "review_reasons": [
+            "LOW_CONFIDENCE"
+          ],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "SƠ ĐỒ 3, MÔ HÌNH THỰC THỂ - QUAN HỆ (ER) HỆ THỐNG HÓA ĐƠN",
+              "bbox": [
+                0.13194,
+                0.04133,
+                0.87292,
+                0.063
+              ],
+              "confidence": 0.8713
+            },
+            {
+              "text": "Chú thích",
+              "bbox": [
+                0.12083,
+                0.71976,
+                0.20347,
+                0.73337
+              ],
+              "confidence": 0.8582
+            },
+            {
+              "text": "PK: khóa chính (primary key), FK: khóa ngoại (foreign key), 1 - N: quan hệ một - nhiều.",
+              "bbox": [
+                0.12361,
+                0.7369,
+                0.68542,
+                0.75252
+              ],
+              "confidence": 0.8178
+            },
+            {
+              "text": "Mỗi hợp đồng thuộc đúng một khách hàng: một hợp đồng có thể phát sinh nhiều hóa đơn; mỏi hóa đơn gồm nhiều",
+              "bbox": [
+                0.12222,
+                0.75202,
+                0.85694,
+                0.76815
+              ],
+              "confidence": 0.881
+            },
+            {
+              "text": "dòng chi tiết, mỗi dòng tham chiếu một sản phẩm.",
+              "bbox": [
+                0.12431,
+                0.76663,
+                0.45208,
+                0.78175
+              ],
+              "confidence": 0.6178
+            },
+            {
+              "text": "Phiên bản mô hình: v2.3 - cập nhật ngày 10/10/2026",
+              "bbox": [
+                0.12222,
+                0.78276,
+                0.47153,
+                0.79738
+              ],
+              "confidence": 0.643
+            }
+          ],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p3_002",
+          "type": "figure",
+          "reading_order": 1,
+          "bbox_normalized": [
+            0.08972,
+            0.10003,
+            0.91803,
+            0.65124
+          ],
+          "hierarchy_breadcrumb": [
+            "Ghi chú:"
+          ],
+          "text": "1\nphát sinh\nN\nHOA DON\nso hoa don PK\nso hop dong FK\nngay lap\ntong tien\nvat\n1\ngồm\nN",
+          "content_markdown": "",
+          "confidence_score": 0.865,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "1",
+              "bbox": [
+                0.75486,
+                0.22177,
+                0.77431,
+                0.23992
+              ],
+              "confidence": 0.9023
+            },
+            {
+              "text": "phát sinh",
+              "bbox": [
+                0.75764,
+                0.2626,
+                0.82569,
+                0.27823
+              ],
+              "confidence": 0.8864
+            },
+            {
+              "text": "N",
+              "bbox": [
+                0.75208,
+                0.30948,
+                0.775,
+                0.32208
+              ],
+              "confidence": 0.499
+            },
+            {
+              "text": "HOA DON",
+              "bbox": [
+                0.71111,
+                0.33115,
+                0.79236,
+                0.34476
+              ],
+              "confidence": 0.9055
+            },
+            {
+              "text": "so hoa don",
+              "bbox": [
+                0.60903,
+                0.35081,
+                0.69583,
+                0.36442
+              ],
+              "confidence": 0.8871
+            },
+            {
+              "text": "PK",
+              "bbox": [
+                0.86806,
+                0.3503,
+                0.89444,
+                0.36442
+              ],
+              "confidence": 0.8561
+            },
+            {
+              "text": "so hop dong",
+              "bbox": [
+                0.60833,
+                0.36895,
+                0.70347,
+                0.38558
+              ],
+              "confidence": 0.874
+            },
+            {
+              "text": "FK",
+              "bbox": [
+                0.86875,
+                0.36946,
+                0.89514,
+                0.38357
+              ],
+              "confidence": 0.8545
+            },
+            {
+              "text": "ngay lap",
+              "bbox": [
+                0.60764,
+                0.38861,
+                0.67986,
+                0.40423
+              ],
+              "confidence": 0.8631
+            },
+            {
+              "text": "tong tien",
+              "bbox": [
+                0.60764,
+                0.40675,
+                0.68889,
+                0.42339
+              ],
+              "confidence": 0.8846
+            },
+            {
+              "text": "vat",
+              "bbox": [
+                0.60625,
+                0.42591,
+                0.64167,
+                0.44153
+              ],
+              "confidence": 0.868
+            },
+            {
+              "text": "1",
+              "bbox": [
+                0.75139,
+                0.44808,
+                0.77431,
+                0.46321
+              ],
+              "confidence": 0.8892
+            },
+            {
+              "text": "gồm",
+              "bbox": [
+                0.77361,
+                0.4879,
+                0.81111,
+                0.50403
+              ],
+              "confidence": 0.7979
+            },
+            {
+              "text": "N",
+              "bbox": [
+                0.75486,
+                0.53478,
+                0.77639,
+                0.5499
+              ],
+              "confidence": 0.4398
+            }
+          ],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p3_003",
+          "type": "figure",
+          "reading_order": 2,
+          "bbox_normalized": [
+            0.09371,
+            0.10298,
+            0.90218,
+            0.21965
+          ],
+          "hierarchy_breadcrumb": [
+            "Ghi chú:"
+          ],
+          "text": "KHACH HANG HOP DONG\nma kh PK so hop dong PK\nten kh 1 ký N ma kh FK\nma so thue ngay kk\ndia chi gia tri\nso dien thoai trang thai",
+          "content_markdown": "",
+          "confidence_score": 0.8422,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "KHACH HANG",
+              "bbox": [
+                0.18819,
+                0.10685,
+                0.30486,
+                0.11996
+              ],
+              "confidence": 0.8717
+            },
+            {
+              "text": "HOP DONG",
+              "bbox": [
+                0.70486,
+                0.10585,
+                0.79722,
+                0.11946
+              ],
+              "confidence": 0.8979
+            },
+            {
+              "text": "ma kh",
+              "bbox": [
+                0.10069,
+                0.12601,
+                0.15,
+                0.14062
+              ],
+              "confidence": 0.7477
+            },
+            {
+              "text": "PK",
+              "bbox": [
+                0.36042,
+                0.1245,
+                0.38889,
+                0.14062
+              ],
+              "confidence": 0.8562
+            },
+            {
+              "text": "so hop dong",
+              "bbox": [
+                0.60764,
+                0.125,
+                0.70486,
+                0.14012
+              ],
+              "confidence": 0.8799
+            },
+            {
+              "text": "PK",
+              "bbox": [
+                0.86736,
+                0.125,
+                0.89514,
+                0.13911
+              ],
+              "confidence": 0.8625
+            },
+            {
+              "text": "ten kh",
+              "bbox": [
+                0.10139,
+                0.14466,
+                0.15694,
+                0.16028
+              ],
+              "confidence": 0.8859
+            },
+            {
+              "text": "1",
+              "bbox": [
+                0.39514,
+                0.14113,
+                0.41736,
+                0.15675
+              ],
+              "confidence": 0.9153
+            },
+            {
+              "text": "ký",
+              "bbox": [
+                0.48681,
+                0.13911,
+                0.50903,
+                0.15423
+              ],
+              "confidence": 0.8019
+            },
+            {
+              "text": "N",
+              "bbox": [
+                0.57708,
+                0.14113,
+                0.59931,
+                0.15625
+              ],
+              "confidence": 0.524
+            },
+            {
+              "text": "ma kh",
+              "bbox": [
+                0.60625,
+                0.14365,
+                0.65556,
+                0.15978
+              ],
+              "confidence": 0.7578
+            },
+            {
+              "text": "FK",
+              "bbox": [
+                0.86806,
+                0.14415,
+                0.89444,
+                0.15827
+              ],
+              "confidence": 0.8481
+            },
+            {
+              "text": "ma so thue",
+              "bbox": [
+                0.10069,
+                0.16381,
+                0.18958,
+                0.17893
+              ],
+              "confidence": 0.8653
+            },
+            {
+              "text": "ngay kk",
+              "bbox": [
+                0.60625,
+                0.1628,
+                0.67708,
+                0.17994
+              ],
+              "confidence": 0.6905
+            },
+            {
+              "text": "dia chi",
+              "bbox": [
+                0.10208,
+                0.18347,
+                0.16389,
+                0.19758
+              ],
+              "confidence": 0.8801
+            },
+            {
+              "text": "gia tri",
+              "bbox": [
+                0.60764,
+                0.18196,
+                0.67153,
+                0.19808
+              ],
+              "confidence": 0.885
+            },
+            {
+              "text": "so dien thoai",
+              "bbox": [
+                0.10139,
+                0.20212,
+                0.2125,
+                0.21724
+              ],
+              "confidence": 0.8163
+            },
+            {
+              "text": "trang thai",
+              "bbox": [
+                0.60694,
+                0.2001,
+                0.69514,
+                0.21673
+              ],
+              "confidence": 0.8754
+            }
+          ],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        },
+        {
+          "element_id": "el_p3_004",
+          "type": "figure",
+          "reading_order": 3,
+          "bbox_normalized": [
+            0.09539,
+            0.55312,
+            0.90309,
+            0.65108
+          ],
+          "hierarchy_breadcrumb": [
+            "Ghi chú:"
+          ],
+          "text": "SAN PHAM CHỊ TIẾT HOA DON\nma sp PK 1 được bán trong N so hoa don PK,FK\nten sp ma sp PK,FK\ndvt so luong\ndon gia chuan don,gia",
+          "content_markdown": "",
+          "confidence_score": 0.8557,
+          "needs_human_review": false,
+          "review_reasons": [],
+          "extraction_engine": "docling_heron+rapidocr_ppocr_det+vietocr_vgg_seq2seq",
+          "human_corrected": false,
+          "lines": [
+            {
+              "text": "SAN PHAM",
+              "bbox": [
+                0.20069,
+                0.55696,
+                0.29097,
+                0.57056
+              ],
+              "confidence": 0.8315
+            },
+            {
+              "text": "CHỊ TIẾT HOA DON",
+              "bbox": [
+                0.67569,
+                0.55645,
+                0.82917,
+                0.57006
+              ],
+              "confidence": 0.839
+            },
+            {
+              "text": "ma sp",
+              "bbox": [
+                0.10208,
+                0.57661,
+                0.15069,
+                0.59173
+              ],
+              "confidence": 0.8742
+            },
+            {
+              "text": "PK",
+              "bbox": [
+                0.36181,
+                0.5746,
+                0.39028,
+                0.59073
+              ],
+              "confidence": 0.8718
+            },
+            {
+              "text": "1",
+              "bbox": [
+                0.39931,
+                0.58266,
+                0.41667,
+                0.59677
+              ],
+              "confidence": 0.9007
+            },
+            {
+              "text": "được bán trong",
+              "bbox": [
+                0.44722,
+                0.58014,
+                0.55208,
+                0.59526
+              ],
+              "confidence": 0.8755
+            },
+            {
+              "text": "N",
+              "bbox": [
+                0.57847,
+                0.58317,
+                0.6,
+                0.59627
+              ],
+              "confidence": 0.5102
+            },
+            {
+              "text": "so hoa don",
+              "bbox": [
+                0.60903,
+                0.5751,
+                0.69653,
+                0.59022
+              ],
+              "confidence": 0.897
+            },
+            {
+              "text": "PK,FK",
+              "bbox": [
+                0.84722,
+                0.5756,
+                0.89583,
+                0.58972
+              ],
+              "confidence": 0.8325
+            },
+            {
+              "text": "ten sp",
+              "bbox": [
+                0.10208,
+                0.59476,
+                0.15833,
+                0.61139
+              ],
+              "confidence": 0.8985
+            },
+            {
+              "text": "ma sp",
+              "bbox": [
+                0.60764,
+                0.59577,
+                0.65625,
+                0.61038
+              ],
+              "confidence": 0.6973
+            },
+            {
+              "text": "PK,FK",
+              "bbox": [
+                0.84722,
+                0.59476,
+                0.89583,
+                0.60887
+              ],
+              "confidence": 0.837
+            },
+            {
+              "text": "dvt",
+              "bbox": [
+                0.10278,
+                0.61442,
+                0.14097,
+                0.62903
+              ],
+              "confidence": 0.9204
+            },
+            {
+              "text": "so luong",
+              "bbox": [
+                0.60972,
+                0.61391,
+                0.68056,
+                0.62954
+              ],
+              "confidence": 0.8928
+            },
+            {
+              "text": "don gia chuan",
+              "bbox": [
+                0.10347,
+                0.63357,
+                0.21458,
+                0.64869
+              ],
+              "confidence": 0.9002
+            },
+            {
+              "text": "don,gia",
+              "bbox": [
+                0.60903,
+                0.63256,
+                0.67292,
+                0.64869
+              ],
+              "confidence": 0.8009
+            }
+          ],
+          "cells": [],
+          "is_handwritten": false,
+          "multi_select": false,
+          "options": []
+        }
+      ],
+      "processing_time_ms": 13227
+    }
+  ],
+  "logical_tables": [
+    {
+      "logical_table_id": "lt_001",
+      "header_rows": 1,
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": true,
+          "text": "Khối",
+          "bbox": [
+            0.10244,
+            0.5821,
+            0.34692,
+            0.60168
+          ],
+          "confidence": 0.707,
+          "check_failed": false
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": true,
+          "text": "Số phòng",
+          "bbox": [
+            0.34692,
+            0.5821,
+            0.46333,
+            0.60168
+          ],
+          "confidence": 0.8636,
+          "check_failed": false
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": true,
+          "text": "Nhân sự",
+          "bbox": [
+            0.46333,
+            0.5821,
+            0.57936,
+            0.60168
+          ],
+          "confidence": 0.729,
+          "check_failed": false
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "Kinh doanh",
+          "bbox": [
+            0.10244,
+            0.60168,
+            0.34692,
+            0.6221
+          ],
+          "confidence": 0.898,
+          "check_failed": false
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "3",
+          "numeric_value": 3.0,
+          "bbox": [
+            0.34692,
+            0.60168,
+            0.46333,
+            0.6221
+          ],
+          "confidence": 0.9332,
+          "check_failed": false
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "64",
+          "numeric_value": 64.0,
+          "bbox": [
+            0.46333,
+            0.60168,
+            0.57936,
+            0.6221
+          ],
+          "confidence": 0.889,
+          "check_failed": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "Kỹ thuật",
+          "bbox": [
+            0.10244,
+            0.6221,
+            0.34692,
+            0.64224
+          ],
+          "confidence": 0.8981,
+          "check_failed": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "3",
+          "numeric_value": 3.0,
+          "bbox": [
+            0.34692,
+            0.6221,
+            0.46333,
+            0.64224
+          ],
+          "confidence": 0.9307,
+          "check_failed": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "78",
+          "numeric_value": 78.0,
+          "bbox": [
+            0.46333,
+            0.6221,
+            0.57936,
+            0.64224
+          ],
+          "confidence": 0.9142,
+          "check_failed": false
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "Tài chính - Hành chính",
+          "bbox": [
+            0.10244,
+            0.64224,
+            0.34692,
+            0.6621
+          ],
+          "confidence": 0.8832,
+          "check_failed": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "3",
+          "numeric_value": 3.0,
+          "bbox": [
+            0.34692,
+            0.64224,
+            0.46333,
+            0.6621
+          ],
+          "confidence": 0.9336,
+          "check_failed": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "rowspan": 1,
+          "colspan": 1,
+          "is_header": false,
+          "text": "44",
+          "numeric_value": 44.0,
+          "bbox": [
+            0.46333,
+            0.64224,
+            0.57936,
+            0.6621
+          ],
+          "confidence": 0.9036,
+          "check_failed": false
+        }
+      ],
+      "content_html": "<table><thead><tr><th data-bbox='[0.1024,0.5821,0.3469,0.6017]' data-conf='0.71'>Khối</th><th data-bbox='[0.3469,0.5821,0.4633,0.6017]' data-conf='0.86'>Số phòng</th><th data-bbox='[0.4633,0.5821,0.5794,0.6017]' data-conf='0.73'>Nhân sự</th></tr></thead><tbody><tr><td data-bbox='[0.1024,0.6017,0.3469,0.6221]' data-conf='0.90'>Kinh doanh</td><td data-bbox='[0.3469,0.6017,0.4633,0.6221]' data-conf='0.93'>3</td><td data-bbox='[0.4633,0.6017,0.5794,0.6221]' data-conf='0.89'>64</td></tr><tr><td data-bbox='[0.1024,0.6221,0.3469,0.6422]' data-conf='0.90'>Kỹ thuật</td><td data-bbox='[0.3469,0.6221,0.4633,0.6422]' data-conf='0.93'>3</td><td data-bbox='[0.4633,0.6221,0.5794,0.6422]' data-conf='0.91'>78</td></tr><tr><td data-bbox='[0.1024,0.6422,0.3469,0.6621]' data-conf='0.88'>Tài chính - Hành chính</td><td data-bbox='[0.3469,0.6422,0.4633,0.6621]' data-conf='0.93'>3</td><td data-bbox='[0.4633,0.6422,0.5794,0.6621]' data-conf='0.90'>44</td></tr></tbody></table>",
+      "content_markdown": "| Khối | Số phòng | Nhân sự |\n|---|---|---|\n| Kinh doanh | 3 | 64 |\n| Kỹ thuật | 3 | 78 |\n| Tài chính - Hành chính | 3 | 44 |",
+      "parts": [
+        {
+          "page_number": 2,
+          "element_id": "el_p2_006",
+          "row_start": 1,
+          "row_end": 3
+        }
+      ]
+    }
+  ],
+  "chunks": [
+    {
+      "chunk_id": "scan_test_3_so_do_c0000",
+      "type": "text",
+      "breadcrumb": [
+        "SƠ ĐỒ 1. QUY TRÌNH PHÊ DUYỆT ĐỂ NGHỊ THANH TOÁN"
+      ],
+      "text": "[Bối cảnh: scan_test_3_so_do > SƠ ĐỒ 1. QUY TRÌNH PHÊ DUYỆT ĐỂ NGHỊ THANH TOÁN]\n### SƠ ĐỒ 1. QUY TRÌNH PHÊ DUYỆT ĐỂ NGHỊ THANH TOÁN\n\n> [Hình] Bắt đầu / Nhân viên lập đề nghị thanh / toán kèm chứng từ / Trưởng phòng kiểm tra hồ sơ Bổ sung / Hồ sơ hợp lệ? Không Trả lại nhân viên bổ sung hồ sơ / Có / Kế toán trưởng soát xét / Có / Giá trị 5 50 triệu đồng? Giám đốc phê duyệt / Không / Kế toán thanh toán lập lệnh chi / Thời hạn xử lý: tối đa Thủ quỹ hoặc ngân hàng thực / 05 ngày làm việc kể hiện chuyển khoản / từ ngày nhận đủ hồ sơ / Lưu hồ sơ, cập nhật sổ sách / Kết thúc / Chú thích: / Điểm bắt đầu / kết thúc / Bước xử lý / Điều kiện rẽ nhánh\n\n> [Hình]",
+      "source_refs": [
+        {
+          "page_number": 1,
+          "element_id": "el_p1_001",
+          "bbox": [
+            0.18689,
+            0.0441,
+            0.81365,
+            0.06254
+          ]
+        },
+        {
+          "page_number": 1,
+          "element_id": "el_p1_002",
+          "bbox": [
+            0.0983,
+            0.08652,
+            0.87215,
+            0.9004
+          ]
+        },
+        {
+          "page_number": 1,
+          "element_id": "el_p1_003",
+          "bbox": [
+            0.10162,
+            0.87617,
+            0.15681,
+            0.90024
+          ]
+        }
+      ]
+    },
+    {
+      "chunk_id": "scan_test_3_so_do_c0001",
+      "type": "text",
+      "breadcrumb": [
+        "SƠ ĐỒ 2. CƠ CẤU TỔ CHỨC CÔNG TY"
+      ],
+      "text": "[Bối cảnh: scan_test_3_so_do > SƠ ĐỒ 2. CƠ CẤU TỔ CHỨC CÔNG TY]\n### SƠ ĐỒ 2. CƠ CẤU TỔ CHỨC CÔNG TY\n\n> [Hình] Hội đồng thành viên / báo cáo trực tiếp th / Ban Giám đốc Phòng Kiểm soát nội bộ / Phó Giám đốc Kinh doanh Phó Giám đốc Kỹ thuật Phó Giám đốc Tài chính / Phòng Bán hàng Phòng Phát triển phần mềm Phòng Kế toán / Phòng Marketing Phòng Hạ tầng Phòng Nhân sự / Phòng Chăm sóc khách hàng Phòng Kiểm thử Phòng Pháp chế",
+      "source_refs": [
+        {
+          "page_number": 2,
+          "element_id": "el_p2_001",
+          "bbox": [
+            0.29833,
+            0.04184,
+            0.6972,
+            0.05939
+          ]
+        },
+        {
+          "page_number": 2,
+          "element_id": "el_p2_002",
+          "bbox": [
+            0.08156,
+            0.07258,
+            0.97135,
+            0.43698
+          ]
+        }
+      ]
+    },
+    {
+      "chunk_id": "scan_test_3_so_do_c0002",
+      "type": "text",
+      "breadcrumb": [
+        "Ghi chú:"
+      ],
+      "text": "[Bối cảnh: scan_test_3_so_do > Ghi chú:]\n### Ghi chú:\n\n- Đường liền thế hiện quan hệ quản lý trực tiếp; đường đút nét thể hiện quan hệ báo cáo chuyên môn.\n\n- Tổng số nhân sự toàn công ty tại ngày 30/09/2026: 186 người.",
+      "source_refs": [
+        {
+          "page_number": 2,
+          "element_id": "el_p2_003",
+          "bbox": [
+            0.10077,
+            0.52346,
+            0.16627,
+            0.53355
+          ]
+        },
+        {
+          "page_number": 2,
+          "element_id": "el_p2_004",
+          "bbox": [
+            0.10111,
+            0.54039,
+            0.78729,
+            0.55268
+          ]
+        },
+        {
+          "page_number": 2,
+          "element_id": "el_p2_005",
+          "bbox": [
+            0.10155,
+            0.55482,
+            0.52975,
+            0.56657
+          ]
+        }
+      ]
+    },
+    {
+      "chunk_id": "scan_test_3_so_do_c0003",
+      "type": "table",
+      "breadcrumb": [
+        "Ghi chú:"
+      ],
+      "text": "[Bối cảnh: scan_test_3_so_do > Ghi chú:]\n| Khối | Số phòng | Nhân sự |\n|---|---|---|\n| Kinh doanh | 3 | 64 |\n| Kỹ thuật | 3 | 78 |\n| Tài chính - Hành chính | 3 | 44 |",
+      "source_refs": [
+        {
+          "page_number": 2,
+          "element_id": "el_p2_006",
+          "bbox": [
+            0.101,
+            0.58045,
+            0.58109,
+            0.66316
+          ]
+        }
+      ]
+    },
+    {
+      "chunk_id": "scan_test_3_so_do_c0004",
+      "type": "text",
+      "breadcrumb": [
+        "Ghi chú:"
+      ],
+      "text": "[Bối cảnh: scan_test_3_so_do > Ghi chú:]\n> [Dấu red] BẢN SAO Hà Nội 12/10/2026\n\n> ✍ cấp nhất theo 0Đ 214/QĐ-HĐTV\n\n> [Hình] SƠ ĐỒ 3, MÔ HÌNH THỰC THỂ - QUAN HỆ (ER) HỆ THỐNG HÓA ĐƠN / Chú thích / PK: khóa chính (primary key), FK: khóa ngoại (foreign key), 1 - N: quan hệ một - nhiều. / Mỗi hợp đồng thuộc đúng một khách hàng: một hợp đồng có thể phát sinh nhiều hóa đơn; mỏi hóa đơn gồm nhiều / dòng chi tiết, mỗi dòng tham chiếu một sản phẩm. / Phiên bản mô hình: v2.3 - cập nhật ngày 10/10/2026\n\n> [Hình] 1 / phát sinh / N / HOA DON / so hoa don PK / so hop dong FK / ngay lap / tong tien / vat / 1 / gồm / N\n\n> [Hình] KHACH HANG HOP DONG / ma kh PK so hop dong PK / ten kh 1 ký N ma kh FK / ma so thue ngay kk / dia chi gia tri / so dien thoai trang thai\n\n> [Hình] SAN PHAM CHỊ TIẾT HOA DON / ma sp PK 1 được bán trong N so hoa don PK,FK / ten sp ma sp PK,FK / dvt so luong / don gia chuan don,gia",
+      "source_refs": [
+        {
+          "page_number": 2,
+          "element_id": "el_p2_007",
+          "bbox": [
+            0.63756,
+            0.57622,
+            0.88941,
+            0.65063
+          ]
+        },
+        {
+          "page_number": 2,
+          "element_id": "el_p2_008",
+          "bbox": [
+            0.10982,
+            0.68392,
+            0.38339,
+            0.69846
+          ]
+        },
+        {
+          "page_number": 3,
+          "element_id": "el_p3_001",
+          "bbox": [
+            0.00325,
+            0.00319,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "page_number": 3,
+          "element_id": "el_p3_002",
+          "bbox": [
+            0.08972,
+            0.10003,
+            0.91803,
+            0.65124
+          ]
+        },
+        {
+          "page_number": 3,
+          "element_id": "el_p3_003",
+          "bbox": [
+            0.09371,
+            0.10298,
+            0.90218,
+            0.21965
+          ]
+        },
+        {
+          "page_number": 3,
+          "element_id": "el_p3_004",
+          "bbox": [
+            0.09539,
+            0.55312,
+            0.90309,
+            0.65108
+          ]
+        }
+      ]
+    }
+  ]
+}
