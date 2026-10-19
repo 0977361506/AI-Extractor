@@ -65,7 +65,10 @@ def process_document(
     job_id: str | None = None,
     pages: list[int] | None = None,
     on_page: Callable[[object], None] | None = None,
+    vlm=None,
+    vlm_settings=None,
 ) -> Document:
+    """``vlm``: optional ``VlmClient``; routed regions are re-read by the MB LLM Gateway."""
     s = settings or get_settings()
     t0 = time.perf_counter()
     doc_id = document_id or new_id("doc")
@@ -105,6 +108,11 @@ def process_document(
         emit(_event(doc_id, job_id, "IN_PROGRESS", pct, "LAYOUT_OCR", f"Đang xử lý trang {src.page_number}/{total}..."))
         try:
             out = process_page(src, models, storage, doc_id, s, review_threshold)
+            if vlm is not None and vlm_settings is not None:
+                from idp.vlm.refine import refine_page
+
+                emit(_event(doc_id, job_id, "IN_PROGRESS", pct, "VLM_REFINE", f"Đang dùng AI chuyên sâu đọc vùng khó trang {src.page_number}..."))
+                refine_page(out.page, out.display, vlm, vlm_settings)
             red_stamp |= out.has_red_stamp
             doc_pages.append(out.page)
             if on_page:
@@ -134,7 +142,13 @@ def process_document(
             total_pages=total,
             has_red_stamp=red_stamp,
             processing_time_ms=int((time.perf_counter() - t0) * 1000),
-            engine_versions={"layout": models.layout.name, "detector": models.detector.name, "recognizer": models.recognizer.name},
+            vlm_invocations_count=vlm.calls if vlm is not None else 0,
+            engine_versions={
+                "layout": models.layout.name,
+                "detector": models.detector.name,
+                "recognizer": models.recognizer.name,
+                **({"vlm": vlm.model} if vlm is not None else {}),
+            },
         ),
         pages=doc_pages,
     )

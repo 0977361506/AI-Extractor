@@ -35,6 +35,7 @@ def process(
     out: Path = typer.Option(None, help="Thư mục kết quả (mặc định: data/)"),
     overlay: bool = typer.Option(True, help="Lưu ảnh overlay bbox để kiểm tra"),
     pages: str = typer.Option("", help="Chỉ xử lý các trang, vd '1,3'"),
+    vlm: bool = typer.Option(True, help="Gọi LLM Gateway cho vùng khó nếu đã bật trong cài đặt"),
 ) -> None:
     """Xử lý tài liệu → ast.json, doc.md, chunks.jsonl (+ overlay)."""
     _utf8_console()
@@ -49,6 +50,9 @@ def process(
     storage = LocalStorage(out or settings.data_dir)
     models = PageModels.load(settings=settings)
     wanted = [int(p) for p in pages.split(",") if p.strip()] or None
+    vlm_client, vlm_settings = _vlm_from_settings(settings) if vlm else (None, None)
+    if vlm_client is not None:
+        typer.echo(f"VLM: {vlm_settings.base_url} model={vlm_settings.model}")
     for f in files:
         t0 = time.perf_counter()
         doc_id = f.stem
@@ -68,6 +72,9 @@ def process(
             pages=wanted,
             on_page=save_overlay,
             on_event=lambda ev: typer.echo(f"  [{ev['progress_percentage']:3d}%] {ev['message_vi']}"),
+            review_threshold=vlm_settings.ui_threshold if vlm_settings else 0.80,
+            vlm=vlm_client,
+            vlm_settings=vlm_settings,
         )
         n_el = sum(len(p.elements) for p in doc.pages)
         n_review = sum(e.needs_human_review for _, e in doc.iter_elements())
@@ -77,6 +84,38 @@ def process(
             f"{len(doc.chunks)} chunk | {time.perf_counter() - t0:.1f}s" + (f" | LỖI trang {failed}" if failed else "")
         )
         typer.echo(f"  → {storage.path(doc_id)}")
+
+
+def _vlm_from_settings(settings):
+    from idp.jobs.db import Database
+    from idp.vlm.client import VlmClient
+    from idp.vlm.settings import SettingsStore
+
+    db = Database(settings.database)
+    vs = SettingsStore(db).load()
+    if not (vs.enabled and vs.base_url and vs.model):
+        return None, None
+    return VlmClient(vs, db=db), vs
+
+
+@app.command("vlm-test")
+def vlm_test() -> None:
+    """Kiểm tra kết nối LLM Gateway (6 bước) theo cài đặt đã lưu."""
+    _utf8_console()
+    from idp.core.config import get_settings
+    from idp.jobs.db import Database
+    from idp.vlm.connection_test import run_connection_test
+    from idp.vlm.settings import SettingsStore
+
+    db = Database(get_settings().database)
+    result = run_connection_test(SettingsStore(db).load())
+    db.add_connection_test(result)
+    for step in result["steps"]:
+        mark = "OK " if step["ok"] else "LỖI"
+        typer.echo(f"[{mark}] {step['name']:<10} {step['latency_ms']:>6} ms  {step['detail']}")
+        if step["hint"]:
+            typer.echo(f"       gợi ý: {step['hint']}")
+    raise typer.Exit(0 if result["ok"] else 1)
 
 
 @app.command("gt-init")

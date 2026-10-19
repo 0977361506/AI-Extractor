@@ -124,6 +124,7 @@ class TableCell(_Model):
     bbox: BBox | None = None
     confidence: float = 1.0
     check_failed: bool = False
+    alt_text: str | None = None  # OCR reading kept when the VLM disagreed
 
 
 class ChoiceOption(_Model):
