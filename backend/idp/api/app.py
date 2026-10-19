@@ -29,6 +29,11 @@ from idp.vlm.settings import SettingsStore
 
 FINAL = {"COMPLETED", "PARTIAL", "FAILED"}
 _IMAGE_KINDS = {"display", "raw", "ocr", "overlay"}
+# previews embed user-supplied markup: nothing may run, load or navigate (the UI frame is sandboxed too)
+_PREVIEW_HEADERS = {
+    "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'self'",
+    "X-Content-Type-Options": "nosniff",
+}
 
 
 def create_app(settings: Settings | None = None, runner=None, vlm_transport=None) -> FastAPI:
@@ -143,6 +148,32 @@ def create_app(settings: Settings | None = None, runner=None, vlm_transport=None
             if storage.exists(key):
                 return FileResponse(storage.path(key), media_type=f"image/{'jpeg' if ext == 'jpg' else 'png'}")
         raise HTTPException(404, "không có ảnh")
+
+    @app.get("/api/v1/documents/{document_id}/pages/{page_number}/preview")
+    def get_page_preview(document_id: str, page_number: int):
+        """HTML rendering of the original Office/HTML file (these formats have no page image)."""
+        row = _row(document_id)
+        key = f"{document_id}/pages/{page_number}_preview.html"
+        if not storage.exists(key):
+            _backfill_previews(document_id, row["filename"])
+        if not storage.exists(key):
+            raise HTTPException(404, "không có bản xem trước")
+        return Response(storage.get_text(key), media_type="text/html; charset=utf-8", headers=_PREVIEW_HEADERS)
+
+    def _backfill_previews(document_id: str, filename: str) -> None:
+        """Documents processed before previews existed: re-render from the stored upload."""
+        raw = f"{document_id}/raw/{filename}"
+        if not storage.exists(raw):
+            return
+        data = storage.get_bytes(raw)
+        kind = detect_file_kind(data, filename)
+        if kind not in (FileKind.DOCX, FileKind.PPTX, FileKind.XLSX, FileKind.HTML):
+            return
+        from idp.ingest.office import parse_office_with_previews
+
+        _, previews = parse_office_with_previews(data, filename, kind, document_id, "")
+        for n, html in previews.items():
+            storage.put_text(document_id, f"pages/{n}_preview.html", html)
 
     @app.get("/api/v1/documents/{document_id}/events")
     async def events(document_id: str, request: Request):

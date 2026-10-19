@@ -67,6 +67,18 @@ describe("VerifyPage", () => {
     await waitFor(() => expect(correct).toHaveBeenCalledWith("doc_1", "el_a", "text", "Hôm nay, ngày 12"));
   });
 
+  it("Office files show the rendered original instead of a page image", async () => {
+    const office = structuredClone(detail);
+    office.ast!.metadata.file_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    vi.spyOn(api, "getDocument").mockResolvedValue(office);
+    renderPage();
+    await screen.findByText("Hôm nay");
+    const frame = document.querySelector("iframe.preview-frame");
+    expect(frame).toHaveAttribute("src", "/api/v1/documents/doc_1/pages/1/preview");
+    expect(document.querySelector(".page-canvas img")).toBeNull();
+    expect(screen.queryByLabelText("Ảnh")).toBeNull();
+  });
+
   it("clicking a box on the page selects the element in the panel", async () => {
     renderPage();
     await screen.findByText("Hôm nay");

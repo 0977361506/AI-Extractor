@@ -76,7 +76,7 @@ export interface Document {
   document_id: string;
   job_id: string;
   status: string;
-  metadata: { filename: string; total_pages: number; has_red_stamp: boolean; processing_time_ms: number; vlm_invocations_count: number };
+  metadata: { filename: string; file_type?: string; total_pages: number; has_red_stamp: boolean; processing_time_ms: number; vlm_invocations_count: number };
   pages: Page[];
 }
 

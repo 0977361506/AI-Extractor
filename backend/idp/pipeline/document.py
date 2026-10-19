@@ -78,10 +78,12 @@ def process_document(
     storage.put_bytes(doc_id, f"raw/{filename}", data)
 
     if kind in (FileKind.DOCX, FileKind.PPTX, FileKind.XLSX, FileKind.HTML):
-        from idp.ingest.office import parse_office
+        from idp.ingest.office import parse_office_with_previews
 
         emit(_event(doc_id, job_id, "IN_PROGRESS", 10, "FAST_PARSE", "Đang đọc cấu trúc tài liệu Office/HTML..."))
-        doc = parse_office(data, filename, kind, doc_id, job_id)
+        doc, previews = parse_office_with_previews(data, filename, kind, doc_id, job_id)
+        for n, html in previews.items():  # no page raster for these formats: the UI shows this instead
+            storage.put_text(doc_id, f"pages/{n}_preview.html", html)
         doc.metadata.processing_time_ms = int((time.perf_counter() - t0) * 1000)
         finalize_document(doc, storage)
         emit(_event(doc_id, job_id, doc.status.value, 100, "DONE", "Hoàn tất", page=1))

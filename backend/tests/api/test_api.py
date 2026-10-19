@@ -147,3 +147,52 @@ def test_delete(client):
     d = _upload(client)
     assert client.delete(f"/api/v1/documents/{d['document_id']}").status_code == 200
     assert client.get(f"/api/v1/documents/{d['document_id']}").status_code == 404
+
+
+@pytest.fixture
+def office_client(tmp_path):
+    settings = Settings(data_dir=tmp_path / "data", db_path=tmp_path / "idp.sqlite", gt_dir=tmp_path / "gt")
+    with TestClient(create_app(settings=settings, runner=InlineRunner())) as c:
+        yield c, tmp_path / "data"
+
+
+def _docx() -> bytes:
+    import io
+
+    import docx
+
+    d = docx.Document()
+    d.add_heading("HỢP ĐỒNG TÍN DỤNG", level=1)
+    d.add_paragraph("Bên vay cam kết")
+    buf = io.BytesIO()
+    d.save(buf)
+    return buf.getvalue()
+
+
+def test_office_document_serves_original_preview_instead_of_image(office_client):
+    client, data_dir = office_client
+    d = _upload(client, "hd.docx", _docx())
+    doc = client.get(f"/api/v1/documents/{d['document_id']}").json()
+    assert doc["status"] == "COMPLETED"
+    first = doc["ast"]["pages"][0]["elements"][0]["element_id"]
+    r = client.get(f"/api/v1/documents/{d['document_id']}/pages/1/preview")
+    assert r.status_code == 200 and r.headers["content-type"].startswith("text/html")
+    assert "default-src 'none'" in r.headers["content-security-policy"]
+    assert f'data-el="{first}"' in r.text and "HỢP ĐỒNG TÍN DỤNG" in r.text
+    assert client.get(f"/api/v1/documents/{d['document_id']}/pages/2/preview").status_code == 404
+
+
+def test_preview_backfilled_for_documents_processed_before_previews_existed(office_client):
+    client, data_dir = office_client
+    d = _upload(client, "hd.docx", _docx())
+    stored = data_dir / d["document_id"] / "pages" / "1_preview.html"
+    assert stored.exists()
+    stored.unlink()
+    r = client.get(f"/api/v1/documents/{d['document_id']}/pages/1/preview")
+    assert r.status_code == 200 and "Bên vay cam kết" in r.text
+    assert stored.exists()
+
+
+def test_scanned_document_has_no_preview(client):
+    d = _upload(client)
+    assert client.get(f"/api/v1/documents/{d['document_id']}/pages/1/preview").status_code == 404

@@ -110,20 +110,26 @@ def sanitize_ocr(text: str, confidence: float) -> tuple[str, float]:
     return text, confidence
 
 
-def drop_empty_lines(cells: list[TableCell]) -> list[TableCell]:
-    """Remove grid rows / columns whose cells are all empty (spurious rulings) and renumber."""
+def line_maps(cells: list[TableCell]) -> tuple[dict[int, int], dict[int, int]]:
+    """Old → new row / column index after :func:`drop_empty_lines` (dropped lines are absent)."""
     if not cells:
-        return cells
+        return {}, {}
     n_rows = max(c.row + c.rowspan for c in cells)
     n_cols = max(c.col + c.colspan for c in cells)
     filled_rows = {r for c in cells if c.text.strip() for r in range(c.row, c.row + c.rowspan)}
     filled_cols = {k for c in cells if c.text.strip() for k in range(c.col, c.col + c.colspan)}
-    keep_rows = [r for r in range(n_rows) if r in filled_rows]
-    keep_cols = [k for k in range(n_cols) if k in filled_cols]
-    if len(keep_rows) == n_rows and len(keep_cols) == n_cols:
+    rmap = {r: i for i, r in enumerate(r for r in range(n_rows) if r in filled_rows)}
+    cmap = {k: i for i, k in enumerate(k for k in range(n_cols) if k in filled_cols)}
+    return rmap, cmap
+
+
+def drop_empty_lines(cells: list[TableCell]) -> list[TableCell]:
+    """Remove grid rows / columns whose cells are all empty (spurious rulings) and renumber."""
+    if not cells:
         return cells
-    rmap = {r: i for i, r in enumerate(keep_rows)}
-    cmap = {k: i for i, k in enumerate(keep_cols)}
+    rmap, cmap = line_maps(cells)
+    if len(rmap) == max(c.row + c.rowspan for c in cells) and len(cmap) == max(c.col + c.colspan for c in cells):
+        return cells
     out = []
     for c in cells:
         rows = [rmap[r] for r in range(c.row, c.row + c.rowspan) if r in rmap]

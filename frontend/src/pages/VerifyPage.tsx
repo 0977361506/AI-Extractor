@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api";
 import { ElementCard } from "../components/ElementCard";
 import { PageViewer } from "../components/PageViewer";
+import { PreviewViewer } from "../components/PreviewViewer";
 import { useDocumentEvents } from "../hooks/useDocumentEvents";
 import { nextIssue } from "../lib/review";
 import type { BBox, DocumentDetail, Element, Page } from "../types";
@@ -43,6 +44,9 @@ export function VerifyPage({ documentId }: { documentId: string }) {
   const elements = useMemo(() => [...(page?.elements ?? [])].sort((a, b) => a.reading_order - b.reading_order), [page]);
   const selected = elements.find((e) => e.element_id === selectedId) ?? null;
   const editable = !!doc.data?.ast;
+  // Office/HTML: no page raster, the left panel shows the original rendered as HTML
+  const fileType = doc.data?.ast?.metadata.file_type ?? "";
+  const native = !!fileType && fileType !== "application/pdf" && !fileType.startsWith("image/");
 
   const highlight: BBox | null = useMemo(() => {
     if (!selected || !selectedCell || selected.type !== "table") return null;
@@ -166,11 +170,13 @@ export function VerifyPage({ documentId }: { documentId: string }) {
               );
             })}
             <span className="spacer" />
-            <select value={imageKind} onChange={(e) => setImageKind(e.target.value as "display" | "ocr")} aria-label="Ảnh">
-              <option value="display">Ảnh gốc</option>
-              <option value="ocr">Ảnh đã làm sạch</option>
-            </select>
-            {LAYERS.map(([label, types]) => (
+            {!native && (
+              <select value={imageKind} onChange={(e) => setImageKind(e.target.value as "display" | "ocr")} aria-label="Ảnh">
+                <option value="display">Ảnh gốc</option>
+                <option value="ocr">Ảnh đã làm sạch</option>
+              </select>
+            )}
+            {!native && LAYERS.map(([label, types]) => (
               <label key={label} className="chip">
                 <input
                   type="checkbox"
@@ -188,7 +194,20 @@ export function VerifyPage({ documentId }: { documentId: string }) {
             <span>{Math.round(zoom * 100)}%</span>
             <button type="button" className="ghost" onClick={() => setZoom(Math.min(3, zoom + 0.25))}>+</button>
           </div>
-          {page ? (
+          {page && native ? (
+            <PreviewViewer
+              url={api.previewUrl(documentId, page.page_number)}
+              page={page}
+              selectedId={selectedId}
+              selectedCell={selectedCell}
+              uiThreshold={uiThreshold}
+              zoom={zoom}
+              onSelect={(id, cell) => {
+                setSelectedId(id);
+                setSelectedCell(cell);
+              }}
+            />
+          ) : page ? (
             <PageViewer
               imageUrl={api.imageUrl(documentId, page.page_number, imageKind)}
               page={page}
