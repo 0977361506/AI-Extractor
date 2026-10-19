@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     data_dir: Path = REPO_ROOT / "data"
     models_dir: Path = REPO_ROOT / "models"
     db_path: Path | None = None
+    gt_dir: Path = REPO_ROOT / "eval" / "ground_truth"
+    frontend_dir: Path = REPO_ROOT / "frontend" / "dist"
 
     render_dpi: int = 300
     analysis_long_side: int = 1600  # downscaled size for orientation / skew analysis
