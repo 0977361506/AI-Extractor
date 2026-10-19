@@ -17,7 +17,7 @@ from idp.core.geometry import PixelBox, containment, crop_quad, denormalize_bbox
 from idp.elements.choices import build_choice_groups
 from idp.elements.handwriting import HandwrittenText, build_ink_elements
 from idp.elements.ink_regions import InkKind, find_ink_blobs
-from idp.ingest.rasterize import SourcePage
+from idp.ingest.rasterize import SourcePage, TextLayerStatus
 from idp.layout.regions import CHECKBOX_LABELS, postprocess_regions
 from idp.preprocess.cleanup import normalize_illumination, remove_speckles, remove_streaks
 from idp.preprocess.deskew import estimate_skew, rotate_bound
@@ -112,6 +112,8 @@ def process_page(
     pn = src.page_number
     scale_dpi = s.render_dpi / 300
     raw_key = storage.put_image(document_id, f"pages/{pn}_raw.jpg", src.image)
+    if src.text_status == TextLayerStatus.CLEAN and src.lines:
+        return _process_digital(src, models, storage, document_id, s, review_threshold, raw_key, t0)
 
     # orientation + skew on a downscaled, ink-cleaned copy
     small, _ = downscale(src.image, s.analysis_long_side)
@@ -216,6 +218,47 @@ def process_page(
     )
     has_red_stamp = any(b.kind == InkKind.STAMP and b.color == "red" for b in blobs)
     return PageOutput(page=page, display=display, has_red_stamp=has_red_stamp, stats={"line_height": line_height, "lines": len(lines)})
+
+
+def _process_digital(src: SourcePage, models, storage, document_id: str, s: Settings, review_threshold: float, raw_key: str, t0: float) -> PageOutput:
+    """Digital PDF page: text (and table cell text) from the PDF text layer; layout model only, no OCR."""
+    pn = src.page_number
+    display = src.image
+    height, width = display.shape[:2]
+    gray = cv2.cvtColor(display, cv2.COLOR_RGB2GRAY)
+    display_key = storage.put_image(document_id, f"pages/{pn}_display.jpg", display)
+    ocr_key = storage.put_image(document_id, f"pages/{pn}_ocr.png", gray)
+    regions = postprocess_regions(models.layout.predict(display), min_score=s.layout_threshold)
+    heights = [ln.bbox[3] - ln.bbox[1] for ln in src.lines]
+    line_height = float(statistics.median(heights)) if heights else 34 * s.render_dpi / 300
+    tables: dict[int, list] = {}
+    ruled_boxes: list[PixelBox] = []
+    for i, r in enumerate(regions):
+        if r.label != "table":
+            continue
+        x0, y0 = max(0, int(r.bbox[0]) - 8), max(0, int(r.bbox[1]) - 8)
+        x1, y1 = min(width, int(r.bbox[2]) + 8), min(height, int(r.bbox[3]) + 8)
+        cells = build_ruled_table(gray[y0:y1, x0:x1], (x0, y0), width, height, line_height, None, text_lines=src.lines)
+        if cells:
+            run_arithmetic_checks(cells)
+            tables[i] = cells
+            ruled_boxes.append(r.bbox)
+    lines = [ln for ln in src.lines if not any(containment(ln.bbox, b) >= 0.5 for b in ruled_boxes)]
+    choices, used = build_choice_groups(regions, lines, width, height)
+    lines = [ln for i, ln in enumerate(lines) if i not in used]
+    elements = build_elements(
+        pn, width, height, regions, lines, tables, extra=choices, review_threshold=review_threshold,
+        line_height=line_height, engine=f"pdf_text+{models.layout.name}",
+    )
+    page = Page(
+        page_number=pn,
+        width=width,
+        height=height,
+        images=PageImages(raw=raw_key, display=display_key, ocr=ocr_key),
+        elements=elements,
+        processing_time_ms=int((time.perf_counter() - t0) * 1000),
+    )
+    return PageOutput(page=page, display=display, stats={"line_height": line_height, "lines": len(lines), "digital": True})
 
 
 __all__ = ["PageOutput", "attach_notes", "denormalize_bbox", "downscale", "process_page"]

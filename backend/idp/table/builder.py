@@ -134,10 +134,11 @@ def drop_empty_lines(cells: list[TableCell]) -> list[TableCell]:
     return out
 
 
-def _finalize(cells: list[TableCell]) -> list[TableCell]:
-    """Repair text, drop empty grid lines, infer header rows, clean numeric columns."""
-    for c in cells:
-        c.text = repair_cell_text(c.text)
+def finalize_cells(cells: list[TableCell], ocr: bool = True) -> list[TableCell]:
+    """Repair OCR text, drop empty grid lines, infer header rows, clean numeric columns."""
+    if ocr:
+        for c in cells:
+            c.text = repair_cell_text(c.text)
     cells = drop_empty_lines(cells)
     if not cells:
         return cells
@@ -152,6 +153,10 @@ def _finalize(cells: list[TableCell]) -> list[TableCell]:
         body = [c for c in cells if c.col == k and not c.is_header and c.text.strip()]
         nums = [c for c in body if parse_vn_number(fix_numeric_ocr(c.text)) is not None]
         if body and len(nums) >= max(1, 0.5 * len(body)):
+            if not ocr:
+                for c in nums:
+                    c.numeric_value = parse_vn_number(c.text)
+                continue
             for c in body:
                 token = extract_number_token(c.text) if c not in nums else None
                 if token:
@@ -178,6 +183,7 @@ def build_ruled_table(
     line_height: float,
     recognizer,
     presence_gray: np.ndarray | None = None,
+    text_lines: list[OcrLine] | None = None,
 ) -> list[TableCell] | None:
     """``gray`` is the table crop (OCR image); ``offset`` its top-left in page pixels.
 
@@ -201,11 +207,21 @@ def build_ruled_table(
             crop = inner[max(0, a - pad) : b + pad, max(0, c0 - pad) : c1 + pad]
             crops.append(np.pad(crop, pad, constant_values=255))
             owners.append(idx)
-    results = recognizer.recognize(crops) if crops else []
-    texts: dict[int, list[tuple[str, float]]] = {}
-    for idx, (text, prob) in zip(owners, results):
-        texts.setdefault(idx, []).append(sanitize_ocr(text, prob))
     ox, oy = offset
+    texts: dict[int, list[tuple[str, float]]] = {}
+    if text_lines is not None:
+        # digital PDF: take cell text from the text layer instead of OCR
+        for ln in sorted(text_lines, key=lambda l: ((l.bbox[1] + l.bbox[3]) / 2, l.bbox[0])):
+            cx, cy = (ln.bbox[0] + ln.bbox[2]) / 2 - ox, (ln.bbox[1] + ln.bbox[3]) / 2 - oy
+            for idx, cell in enumerate(grid.cells):
+                x0, y0, x1, y1 = cell.bbox
+                if x0 <= cx <= x1 and y0 <= cy <= y1:
+                    texts.setdefault(idx, []).append((ln.text, 1.0))
+                    break
+    else:
+        results = recognizer.recognize(crops) if crops else []
+        for idx, (text, prob) in zip(owners, results):
+            texts.setdefault(idx, []).append(sanitize_ocr(text, prob))
     cells = []
     for idx, cell in enumerate(grid.cells):
         parts = texts.get(idx, [])
@@ -221,7 +237,7 @@ def build_ruled_table(
                 bbox=normalize_bbox((x0 + ox, y0 + oy, x1 + ox, y1 + oy), page_w, page_h),
             )
         )
-    return _finalize(cells)
+    return finalize_cells(cells, ocr=text_lines is None)
 
 
 def build_borderless_table(lines: list[OcrLine], page_w: int, page_h: int) -> list[TableCell]:
@@ -273,4 +289,4 @@ def build_borderless_table(lines: list[OcrLine], page_w: int, page_h: int) -> li
                     bbox=normalize_bbox(box, page_w, page_h),
                 )
             )
-    return _finalize(cells)
+    return finalize_cells(cells)

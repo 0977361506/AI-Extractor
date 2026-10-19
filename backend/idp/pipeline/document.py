@@ -100,6 +100,7 @@ def process_document(
     wanted = set(pages) if pages else None
     doc_pages: list[Page] = []
     red_stamp = False
+    charsets: set[str] = set()
     emit(_event(doc_id, job_id, "IN_PROGRESS", 1, "PREPROCESS", f"Bắt đầu xử lý {total} trang..."))
     for src in source:
         if wanted and src.page_number not in wanted:
@@ -107,6 +108,7 @@ def process_document(
         pct = int(100 * (len(doc_pages)) / max(1, len(wanted) if wanted else total))
         emit(_event(doc_id, job_id, "IN_PROGRESS", pct, "LAYOUT_OCR", f"Đang xử lý trang {src.page_number}/{total}..."))
         try:
+            charsets.add(src.charset)
             out = process_page(src, models, storage, doc_id, s, review_threshold)
             if vlm is not None and vlm_settings is not None:
                 from idp.vlm.refine import refine_page
@@ -140,6 +142,7 @@ def process_document(
             filename=filename,
             file_type=MIME[kind],
             total_pages=total,
+            detected_charset=next((c for c in charsets if c != "UNICODE_NFC"), "UNICODE_NFC"),
             has_red_stamp=red_stamp,
             processing_time_ms=int((time.perf_counter() - t0) * 1000),
             vlm_invocations_count=vlm.calls if vlm is not None else 0,

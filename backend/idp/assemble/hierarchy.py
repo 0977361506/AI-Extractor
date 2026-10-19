@@ -50,7 +50,7 @@ def assign_hierarchy(doc: Document) -> None:
                 stack = [(0, title)]
                 el.content_markdown = text_markdown(el.type, el.text)
             elif el.type == ElementType.HEADING:
-                el.level = heading_level(title)
+                el.level = el.level or heading_level(title)
                 while stack and stack[-1][0] >= el.level:
                     stack.pop()
                 stack.append((el.level, title))
