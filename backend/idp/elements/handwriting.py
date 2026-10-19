@@ -163,7 +163,8 @@ def build_ink_elements(
                 continue
 
         el = Element(type=ElementType.HANDWRITTEN_NOTE, text=ht.text, ink_color=blob.color, **base)
-        if ht.text:
-            el.flag(ReviewReason.HANDWRITING)
+        if not ht.text:
+            el.description = "Chữ viết tay (chưa đọc được)"
+        el.flag(ReviewReason.HANDWRITING)
         elements.append(el)
     return elements, consumed

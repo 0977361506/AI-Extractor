@@ -118,3 +118,10 @@ def test_second_address_line_starting_at_left_margin_is_merged():
     texts = [HandwrittenText("Số 12, ngõ 45", 0.7), HandwrittenText("Q. Cầu Giấy", 0.7)]
     els, _ = build_ink_elements(blobs, texts, lines, W, H, line_height=30)
     assert [e.value for e in els] == ["Số 12, ngõ 45, Q. Cầu Giấy"]
+
+
+def test_unreadable_handwriting_is_described_and_flagged():
+    blobs = [InkBlob(InkKind.HANDWRITING, "blue", (100, 900, 400, 940))]
+    (el,) = build_ink_elements(blobs, [HandwrittenText("", 0.2)], [], W, H, line_height=30)[0]
+    assert el.description == "Chữ viết tay (chưa đọc được)"
+    assert ReviewReason.HANDWRITING in el.review_reasons

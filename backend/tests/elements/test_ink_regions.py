@@ -95,3 +95,12 @@ def test_round_stamp_overlapping_handwriting_is_separated():
     assert kinds == sorted([InkKind.STAMP, InkKind.HANDWRITING])
     hand = next(b for b in blobs if b.kind == InkKind.HANDWRITING)
     assert hand.bbox[0] < 80 and hand.bbox[2] < 600
+
+
+def test_tall_rectangular_stamp_with_two_text_lines_is_one_rectangle():
+    m = _masks()
+    _draw(m["red"], lambda c: cv2.rectangle(c, (300, 300), (620, 470), 255, 7))
+    _draw(m["red"], lambda c: cv2.putText(c, "BAN SAO", (380, 370), cv2.FONT_HERSHEY_SIMPLEX, 1.4, 255, 4))
+    _draw(m["red"], lambda c: cv2.putText(c, "Ha Noi 12/10/2026", (330, 430), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 255, 3))
+    blobs = find_ink_blobs(m, line_height=30)
+    assert len(blobs) == 1 and blobs[0].kind == InkKind.STAMP and blobs[0].shape == "rectangle"

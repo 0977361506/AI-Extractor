@@ -105,9 +105,21 @@ def _find_rings(mask: np.ndarray, line_height: float) -> list[tuple[float, float
                     found = True
                     break
             hit += found
-        if hit / len(angles) >= 0.6:
+        if hit / len(angles) < 0.75:
+            continue
+        yy, xx = np.ogrid[:h, :w]
+        d2 = (xx - cx) ** 2 + (yy - cy) ** 2
+        disk_ink = mask[d2 <= (1.1 * r) ** 2].sum()
+        band_ink = mask[(d2 >= (0.85 * r) ** 2) & (d2 <= (1.1 * r) ** 2)].sum()
+        if disk_ink and band_ink / disk_ink >= 0.35:
             rings.append((float(cx), float(cy), float(r)))
-    return rings
+    # one stamp may yield several concentric / shifted circles: keep the largest
+    rings.sort(key=lambda c: -c[2])
+    kept: list[tuple[float, float, float]] = []
+    for c in rings:
+        if all((c[0] - k[0]) ** 2 + (c[1] - k[1]) ** 2 > (max(c[2], k[2])) ** 2 for k in kept):
+            kept.append(c)
+    return kept
 
 
 def find_ink_blobs(
