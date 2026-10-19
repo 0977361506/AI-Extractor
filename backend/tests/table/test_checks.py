@@ -98,3 +98,22 @@ def test_non_numeric_table_has_nothing_to_check():
     cells = _grid([["Họ tên", "Chức vụ"], ["Nguyễn Văn A", "Giám đốc"]])
     report = run_arithmetic_checks(cells)
     assert report.checked == 0 and _failed(cells) == []
+
+
+def test_percentage_row_shown_negative_in_parentheses_passes():
+    rows = [
+        ["Chỉ tiêu", "Mã số", "Quý I"],
+        ["14. Tổng lợi nhuận trước thuế", "50", "1.680"],
+        ["15. Chi phí thuế TNDN hiện hành (20%)", "51", "(336)"],
+    ]
+    cells = _grid(rows)
+    run_arithmetic_checks(cells)
+    assert _failed(cells) == []
+
+
+def test_malformed_number_in_numeric_column_is_the_flagged_cell():
+    rows = [list(r) for r in ALLOCATION]
+    rows[6][2] = "1211.220"  # noise digits glued before 1.220
+    cells = _grid(rows)
+    run_arithmetic_checks(cells)
+    assert (6, 2) in _failed(cells)

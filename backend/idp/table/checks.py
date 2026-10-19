@@ -110,6 +110,13 @@ def run_arithmetic_checks(cells: list[TableCell]) -> CheckReport:
             report.failed += 1
             t.fail(r, k)
 
+    # a cell with digits that is not a valid number (e.g. "1211.567") is itself an error
+    for k in value_cols:
+        for r in t.body:
+            text = t.text(r, k).strip()
+            if text and any(ch.isdigit() for ch in text) and t.value(r, k) is None:
+                record(False, r, k)
+
     labels = {r: t.label(r) for r in t.body}
     stripped = {r: _NUMBERING.sub("", labels[r]) for r in t.body}
     formula_rows: set[int] = set()
@@ -158,7 +165,8 @@ def run_arithmetic_checks(cells: list[TableCell]) -> CheckReport:
                 prev = next((col_vals[p] for p in reversed(above) if col_vals[p] is not None), None)
                 if prev is not None:
                     rate = float(pct.group(1).replace(",", ".")) / 100
-                    record(_close(target, prev * rate, rel=0.002), r, k)
+                    # tax/expense rows are often printed negative "(336)": compare magnitudes
+                    record(_close(abs(target), abs(prev) * rate, rel=0.002), r, k)
                 continue
             hypotheses = []
             for rows in (since, subtotals, [p for p in above if p not in total_rows]):
