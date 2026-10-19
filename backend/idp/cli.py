@@ -79,5 +79,53 @@ def process(
         typer.echo(f"  → {storage.path(doc_id)}")
 
 
+@app.command("gt-init")
+def gt_init(
+    names: list[str] = typer.Argument(..., help="Tên tài liệu trong thư mục kết quả (vd scan_test_hard)"),
+    pred: Path = typer.Option(Path("docs/output"), help="Thư mục kết quả của pipeline"),
+    gt: Path = typer.Option(Path("eval/ground_truth"), help="Thư mục nhãn đúng"),
+) -> None:
+    """Chép kết quả hiện tại làm bản nháp nhãn đúng để sửa tay (hoặc sửa trên UI)."""
+    import shutil
+
+    for name in names:
+        target = gt / name
+        target.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(pred / name / "ast.json", target / "ast.json")
+        typer.echo(f"{name} → {target / 'ast.json'}")
+
+
+@app.command("eval")
+def evaluate(
+    gt: Path = typer.Option(Path("eval/ground_truth"), help="Thư mục nhãn đúng (<doc>/ast.json)"),
+    pred: Path = typer.Option(Path("docs/output"), help="Thư mục kết quả của pipeline"),
+    report: Path = typer.Option(Path("eval/reports/report.json"), help="File báo cáo JSON"),
+) -> None:
+    """Đo CER / TEDS của kết quả so với nhãn đúng."""
+    _utf8_console()
+    import orjson
+
+    from idp.evaluation.runner import evaluate_documents
+
+    result = evaluate_documents(gt, pred)
+    for doc in result["documents"]:
+        for page in doc.get("pages", []):
+            teds_txt = "-" if page["teds"] is None else f"{page['teds']:.3f}"
+            typer.echo(f"{doc['name']:<36} trang {page['page']:>2}  CER {page['cer']:.4f}  TEDS {teds_txt}")
+        if "error" in doc:
+            typer.echo(f"{doc['name']:<36} {doc['error']}")
+    typer.echo(f"TỔNG: {result['summary']}")
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_bytes(orjson.dumps(result, option=orjson.OPT_INDENT_2))
+
+
+@app.command()
+def serve(host: str = "127.0.0.1", port: int = 8000) -> None:
+    """Chạy API + giao diện web."""
+    import uvicorn
+
+    uvicorn.run("idp.api.app:create_app", host=host, port=port, factory=True)
+
+
 if __name__ == "__main__":
     app()
