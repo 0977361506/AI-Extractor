@@ -55,6 +55,15 @@ def fetch_vietocr(models_dir: Path, name: str = "vgg_seq2seq") -> tuple[Path, Pa
     return cfg_path, weights_path
 
 
+def fetch_rapidocr() -> Path:
+    """RapidOCR downloads its ONNX models into its own package folder on first use: trigger that now."""
+    import rapidocr
+    from rapidocr import RapidOCR
+
+    RapidOCR()
+    return Path(rapidocr.__file__).parent / "models"
+
+
 def fetch_all(models_dir: Path) -> dict[str, Path]:
     cfg, weights = fetch_vietocr(models_dir)
-    return {"heron": fetch_heron(models_dir), "vietocr_cfg": cfg, "vietocr_weights": weights}
+    return {"heron": fetch_heron(models_dir), "vietocr_cfg": cfg, "vietocr_weights": weights, "rapidocr": fetch_rapidocr()}
