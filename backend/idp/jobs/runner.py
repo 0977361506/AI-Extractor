@@ -39,6 +39,8 @@ def run_job(document_id: str, job_id: str, filename: str, data_dir: str, db_path
 
         def emit(ev: dict) -> None:
             db.add_event(document_id, ev)
+            if ev.get("current_stage") == "PLAN" and ev["plan"].get("total_pages"):
+                db.update_document(document_id, total_pages=ev["plan"]["total_pages"])  # list progress before the end
 
         def on_page(out) -> None:
             storage.put_text(document_id, f"pages/{out.page.page_number}.json", out.page.model_dump_json(exclude_none=True))

@@ -1,4 +1,4 @@
-import type { ConnectionTestResult, DocumentDetail, DocumentRow, Element, Page, VlmSettings } from "./types";
+import type { ConnectionTestResult, DocumentDetail, DocumentRow, Element, Page, PageTrace, VlmSettings } from "./types";
 
 const BASE = "/api/v1";
 
@@ -35,7 +35,10 @@ export const api = {
     }).then((r) => json<{ correction_id: number; element: Element }>(r)),
   saveGroundTruth: (id: string) => fetch(`${BASE}/documents/${id}/ground-truth`, { method: "POST" }).then((r) => json<{ path: string }>(r)),
   imageUrl: (id: string, n: number, kind: "display" | "ocr" | "raw" = "display") => `${BASE}/documents/${id}/pages/${n}/image?kind=${kind}`,
-  previewUrl: (id: string, n: number) => `${BASE}/documents/${id}/pages/${n}/preview`,
+  /** ``null`` when the page has no trace (not started yet, or processed before traces existed). */
+  getTrace: (id: string, n: number) =>
+    fetch(`${BASE}/documents/${id}/pages/${n}/trace`).then((r) => (r.status === 404 ? null : json<PageTrace>(r))),
+  previewUrl:(id: string, n: number) => `${BASE}/documents/${id}/pages/${n}/preview`,
   exportUrl:(id: string, format: "json" | "md" | "jsonl") => `${BASE}/documents/${id}/export?format=${format}`,
   eventsUrl: (id: string) => `${BASE}/documents/${id}/events`,
   getVlmSettings: () => fetch(`${BASE}/settings/vlm`).then((r) => json<VlmSettings>(r)),

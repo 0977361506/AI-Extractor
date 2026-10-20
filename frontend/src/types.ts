@@ -103,6 +103,45 @@ export interface ProgressEvent {
   current_stage?: string;
   message_vi: string;
   completed_page_preview?: { page_number: number; is_ready: boolean; api_fetch_url: string };
+  plan?: { kind: string; total_pages: number | null; steps: string[] };
+  step?: StepEvent;
+}
+
+export type StepStatus = "pending" | "running" | "done" | "skipped" | "failed";
+
+export interface StepEvent {
+  page: number | null;
+  step: string;
+  status: StepStatus;
+  ms?: number;
+  summary?: Record<string, unknown>;
+  error?: string;
+  reason?: string;
+}
+
+export interface TraceBox {
+  bbox: BBox;
+}
+
+/** backend pages/N_trace.json: per-step results; boxes are normalised to the display image. */
+export interface PageTrace {
+  page: number;
+  steps: Record<
+    string,
+    {
+      status: StepStatus;
+      ms?: number;
+      summary?: Record<string, unknown>;
+      error?: string;
+      reason?: string;
+      regions?: { label: string; score: number; bbox: BBox }[];
+      text_boxes?: BBox[];
+      tables?: { bbox: BBox; cells: { row: number; col: number; text: string; conf: number; bbox: BBox | null; check_failed: boolean }[] }[];
+      lines?: { text: string; conf: number; bbox: BBox; source: string }[];
+      ink?: { kind: string; color: string; bbox: BBox; text: string }[];
+      changes?: { element_id: string; cell?: [number, number]; before: string; after: string }[];
+    }
+  >;
 }
 
 export interface VlmSettings {

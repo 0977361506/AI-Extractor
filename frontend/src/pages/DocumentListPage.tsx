@@ -1,8 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "../api";
+import { ProcessView } from "../components/ProcessView";
 import { useDocumentEvents } from "../hooks/useDocumentEvents";
 import type { DocumentRow } from "../types";
+
+type QueueItem = { id: string; filename: string };
 
 const FINAL = new Set(["COMPLETED", "PARTIAL", "FAILED"]);
 const STATUS_VI: Record<string, string> = {
@@ -13,7 +16,7 @@ const STATUS_VI: Record<string, string> = {
   FAILED: "Lỗi",
 };
 
-function Row({ doc, onOpen, onDelete }: { doc: DocumentRow; onOpen: () => void; onDelete: () => void }) {
+function Row({ doc, onOpen, onProcess, onDelete }: { doc: DocumentRow; onOpen: () => void; onProcess: () => void; onDelete: () => void }) {
   const qc = useQueryClient();
   const live = useDocumentEvents(doc.document_id, !FINAL.has(doc.status), undefined, () => qc.invalidateQueries({ queryKey: ["docs"] }));
   const pct = FINAL.has(doc.status) ? 100 : live?.progress_percentage ?? 0;
@@ -37,6 +40,7 @@ function Row({ doc, onOpen, onDelete }: { doc: DocumentRow; onOpen: () => void; 
         )}
       </td>
       <td className="row-actions">
+        <button type="button" className="ghost" onClick={onProcess}>Quy trình</button>
         <button type="button" onClick={onOpen}>Đối chiếu</button>
         <button type="button" className="ghost" onClick={onDelete}>Xóa</button>
       </td>
@@ -49,6 +53,15 @@ export function DocumentListPage({ onOpen }: { onOpen: (id: string) => void }) {
   const docs = useQuery({ queryKey: ["docs"], queryFn: api.listDocuments, refetchInterval: 4000 });
   const [drag, setDrag] = useState(false);
   const [msg, setMsg] = useState("");
+  // files dropped in this session; the active one is shown step by step
+  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [active, setActive] = useState<string | null>(null);
+
+  const enqueue = (items: QueueItem[]) => {
+    if (!items.length) return;
+    setQueue((q) => [...q, ...items.filter((it) => !q.some((x) => x.id === it.id))]);
+    setActive(items[0].id);
+  };
 
   const upload = async (files: File[]) => {
     if (!files.length) return;
@@ -57,6 +70,7 @@ export function DocumentListPage({ onOpen }: { onOpen: (id: string) => void }) {
       const r = await api.upload(files);
       const errors = r.documents.filter((d) => d.error);
       setMsg(errors.length ? errors.map((d) => `${d.filename}: ${d.error}`).join(" · ") : `Đã tiếp nhận ${r.documents.length} tệp.`);
+      enqueue(r.documents.filter((d) => d.document_id).map((d) => ({ id: d.document_id!, filename: d.filename })));
       qc.invalidateQueries({ queryKey: ["docs"] });
     } catch (e) {
       setMsg(String(e));
@@ -83,6 +97,27 @@ export function DocumentListPage({ onOpen }: { onOpen: (id: string) => void }) {
         <span>hoặc bấm để chọn — PDF, ảnh scan, DOCX, PPTX, XLSX, HTML (nhiều tệp cùng lúc)</span>
       </label>
       {msg && <div className="notice">{msg}</div>}
+      {queue.length > 0 && (
+        <ul className="queue" aria-label="Hàng chờ">
+          {queue.map((it) => {
+            const d = docs.data?.find((x) => x.document_id === it.id);
+            const final = !!d && FINAL.has(d.status);
+            const pct = final ? 100 : d && d.total_pages ? Math.round((100 * d.done_pages) / d.total_pages) : 0;
+            return (
+              <li key={it.id}>
+                <button type="button" aria-pressed={it.id === active} className={`q-card s-${d?.status ?? "PENDING"}`} onClick={() => setActive(it.id)}>
+                  <span className="q-name">{it.filename}</span>
+                  <span className="bar"><span style={{ width: `${pct}%` }} /></span>
+                  <span className="muted small">{STATUS_VI[d?.status ?? "PENDING"]}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {active && (
+        <ProcessView key={active} documentId={active} filename={queue.find((q) => q.id === active)?.filename ?? ""} onOpen={onOpen} />
+      )}
       <section className="card">
         <h2>Hồ sơ</h2>
         {docs.data?.length ? (
@@ -96,6 +131,10 @@ export function DocumentListPage({ onOpen }: { onOpen: (id: string) => void }) {
                   key={d.document_id}
                   doc={d}
                   onOpen={() => onOpen(d.document_id)}
+                  onProcess={() => {
+                    enqueue([{ id: d.document_id, filename: d.filename }]);
+                    window.scrollTo?.({ top: 0, behavior: "smooth" });
+                  }}
                   onDelete={async () => {
                     if (confirm(`Xóa ${d.filename}?`)) {
                       await api.deleteDocument(d.document_id);
