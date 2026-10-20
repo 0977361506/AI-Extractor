@@ -28,6 +28,16 @@ Máy chạy **không cần internet, không cần cài Python/Node, không cần
 | Ổ đĩa | 4 GB trống + dung lượng hồ sơ | SSD |
 | GPU | không cần | — |
 
+### Lấy gói
+
+Gói đã nằm sẵn trong repo, cắt thành các phần 45 MB ở thư mục [`release/`](release/) (GitHub không nhận file trên 100 MB):
+
+1. Trên máy có internet: `git clone https://github.com/0977361506/AI-Extractor.git` (khoảng 0,6 GB),
+   hoặc trên GitHub bấm **Code** → **Download ZIP**.
+2. Mở thư mục `release\`, bấm đúp **`ghep.bat`**: các phần `.001` … `.012` được ghép thành
+   `AI-Extractor-win64-<commit>.zip` và tự kiểm tra mã SHA256. Thấy `OK - file ... nguyen ven` là được.
+3. Chép file zip đó (khoảng 0,5 GB) sang máy ngân hàng qua kênh chuyển dữ liệu được phép.
+
 ### Cài và chạy
 
 1. Chép file zip vào máy. Nếu file được tải từ internet về: chuột phải → **Properties** → tick **Unblock** → **OK**
@@ -106,10 +116,15 @@ Kết quả: thư mục `dist\AI-Extractor-win64\` và file `dist\AI-Extractor-w
 Script tự kiểm tra gói bằng cách nạp toàn bộ model trong một môi trường giả lập máy không internet
 (không có Python của máy build trên PATH, không có cache người dùng, mạng bị chặn) — nếu thiếu gì, build sẽ dừng và báo.
 
-File zip **không đưa vào git** (GitHub giới hạn 100 MB/file). Phát hành bằng một trong hai cách:
+Đưa gói vào repo (cắt thành phần 45 MB, kèm `ghep.bat` và `SHA256SUMS.txt`; các phần của bản cũ bị thay thế):
 
-- GitHub: vào **Releases** → **Draft a new release** → kéo file zip vào phần đính kèm (tối đa 2 GB/file).
-- Chép trực tiếp qua kênh chuyển dữ liệu được phép của ngân hàng.
+```bat
+backend\.venv\Scripts\python packaging\split_release.py dist\AI-Extractor-win64-<commit>.zip
+git add release && git commit -m "release: AI-Extractor-win64-<commit>" && git push
+```
+
+Mỗi phiên bản đưa vào làm lịch sử git nặng thêm khoảng 0,5 GB. Nếu không muốn vậy, tải file zip lên
+**Releases** của GitHub (tối đa 2 GB/file) hoặc chép trực tiếp qua kênh chuyển dữ liệu của ngân hàng.
 
 Gói chứa: Python embeddable chính thức 3.13 (`python\`), thư viện đã cài (`python\Lib\site-packages`),
 runtime Visual C++ đặt cạnh `python.exe`, mã nguồn (`backend\idp`), giao diện (`frontend\dist`), model (`models\`).

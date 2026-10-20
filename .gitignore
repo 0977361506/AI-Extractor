@@ -16,3 +16,4 @@ docs/output/*/pages/*_raw.jpg
 docs/output/*/pages/*_ocr.png
 docs/output/*/pages/*_display.jpg
 eval/reports/
+release/*.zip

@@ -8,3 +8,4 @@
 *.docx binary
 *.xlsx binary
 *.pptx binary
+release/** binary
