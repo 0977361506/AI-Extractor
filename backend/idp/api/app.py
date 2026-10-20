@@ -149,6 +149,15 @@ def create_app(settings: Settings | None = None, runner=None, vlm_transport=None
                 return FileResponse(storage.path(key), media_type=f"image/{'jpeg' if ext == 'jpg' else 'png'}")
         raise HTTPException(404, "không có ảnh")
 
+    @app.get("/api/v1/documents/{document_id}/pages/{page_number}/trace")
+    def get_page_trace(document_id: str, page_number: int):
+        """Per-step intermediate results of a page (rewritten after every step, so it may be partial)."""
+        _row(document_id)
+        key = f"{document_id}/pages/{page_number}_trace.json"
+        if not storage.exists(key):
+            raise HTTPException(404, "trang chưa có dữ liệu từng bước")
+        return Response(storage.get_text(key), media_type="application/json", headers={"Cache-Control": "no-store"})
+
     @app.get("/api/v1/documents/{document_id}/pages/{page_number}/preview")
     def get_page_preview(document_id: str, page_number: int):
         """HTML rendering of the original Office/HTML file (these formats have no page image)."""

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import statistics
 import time
+from collections import Counter
 from dataclasses import dataclass, field
 
 import cv2
@@ -19,6 +20,7 @@ from idp.elements.handwriting import HandwrittenText, build_ink_elements
 from idp.elements.ink_regions import InkKind, find_ink_blobs
 from idp.ingest.rasterize import SourcePage, TextLayerStatus
 from idp.layout.regions import CHECKBOX_LABELS, postprocess_regions
+from idp.pipeline.trace import PageTrace
 from idp.preprocess.cleanup import normalize_illumination, remove_speckles, remove_streaks
 from idp.preprocess.deskew import estimate_skew, rotate_bound
 from idp.preprocess.ink import separate_inks
@@ -106,106 +108,122 @@ def process_page(
     document_id: str,
     settings: Settings | None = None,
     review_threshold: float = 0.80,
+    trace: PageTrace | None = None,
 ) -> PageOutput:
     t0 = time.perf_counter()
     s = settings or get_settings()
+    tr = trace or PageTrace(src.page_number)
     pn = src.page_number
     scale_dpi = s.render_dpi / 300
     raw_key = storage.put_image(document_id, f"pages/{pn}_raw.jpg", src.image)
     if src.text_status == TextLayerStatus.CLEAN and src.lines:
-        return _process_digital(src, models, storage, document_id, s, review_threshold, raw_key, t0)
+        return _process_digital(src, models, storage, document_id, s, review_threshold, raw_key, t0, tr)
 
-    # orientation + skew on a downscaled, ink-cleaned copy
-    small, _ = downscale(src.image, s.analysis_long_side)
-    small_gray = separate_inks(normalize_illumination(small)).ocr_gray
-    angle = detect_orientation(small_gray, models.detector)
-    small_gray = rotate_orthogonal(small_gray, angle)
-    skew = estimate_skew(models.detector.detect(small_gray))
-    display = rotate_orthogonal(src.image, angle)
-    if abs(skew) >= 0.15:
-        display = rotate_bound(display, skew)
-    height, width = display.shape[:2]
+    with tr.step("preprocess") as st:
+        # orientation + skew on a downscaled, ink-cleaned copy
+        small, _ = downscale(src.image, s.analysis_long_side)
+        small_gray = separate_inks(normalize_illumination(small)).ocr_gray
+        angle = detect_orientation(small_gray, models.detector)
+        small_gray = rotate_orthogonal(small_gray, angle)
+        skew = estimate_skew(models.detector.detect(small_gray))
+        display = rotate_orthogonal(src.image, angle)
+        if abs(skew) >= 0.15:
+            display = rotate_bound(display, skew)
+        height, width = display.shape[:2]
 
-    flat = normalize_illumination(display)
-    flat_gray = cv2.cvtColor(flat, cv2.COLOR_RGB2GRAY)
-    ink = separate_inks(flat)
-    ocr_gray = remove_speckles(remove_streaks(ink.ocr_gray), max_area=int(30 * scale_dpi**2), keep_radius=int(15 * scale_dpi))
-    display_key = storage.put_image(document_id, f"pages/{pn}_display.jpg", display)
-    ocr_key = storage.put_image(document_id, f"pages/{pn}_ocr.png", ocr_gray)
+        flat = normalize_illumination(display)
+        flat_gray = cv2.cvtColor(flat, cv2.COLOR_RGB2GRAY)
+        ink = separate_inks(flat)
+        ocr_gray = remove_speckles(remove_streaks(ink.ocr_gray), max_area=int(30 * scale_dpi**2), keep_radius=int(15 * scale_dpi))
+        display_key = storage.put_image(document_id, f"pages/{pn}_display.jpg", display)
+        ocr_key = storage.put_image(document_id, f"pages/{pn}_ocr.png", ocr_gray)
+        tr.set_size(width, height)
+        st.summary(rotation=angle, skew=round(skew, 2), width=width, height=height)
 
-    regions = postprocess_regions(models.layout.predict(display), min_score=s.layout_threshold)
-    quads = models.detector.detect(ocr_gray)
-    line_height = _line_height(quads, 34 * scale_dpi)
+    with tr.step("layout") as st:
+        regions = postprocess_regions(models.layout.predict(display), min_score=s.layout_threshold)
+        quads = models.detector.detect(ocr_gray)
+        line_height = _line_height(quads, 34 * scale_dpi)
+        _trace_regions(tr, st, regions)
+        st.summary(text_boxes=len(quads))
+        st.data(text_boxes=[tr.norm(quad_to_bbox(q)) for q in quads])
 
-    # ruled tables: grid + per-cell OCR
-    tables: dict[int, list] = {}
-    ruled_boxes: list[PixelBox] = []
-    for i, r in enumerate(regions):
-        if r.label != "table":
-            continue
-        pad = int(12 * scale_dpi)
-        x0, y0 = max(0, int(r.bbox[0]) - pad), max(0, int(r.bbox[1]) - pad)
-        x1, y1 = min(width, int(r.bbox[2]) + pad), min(height, int(r.bbox[3]) + pad)
-        cells = build_ruled_table(
-            ocr_gray[y0:y1, x0:x1], (x0, y0), width, height, line_height, models.recognizer, presence_gray=flat_gray[y0:y1, x0:x1]
+    with tr.step("tables") as st:
+        # ruled tables: grid + per-cell OCR
+        tables: dict[int, list] = {}
+        ruled_boxes: list[PixelBox] = []
+        for i, r in enumerate(regions):
+            if r.label != "table":
+                continue
+            pad = int(12 * scale_dpi)
+            x0, y0 = max(0, int(r.bbox[0]) - pad), max(0, int(r.bbox[1]) - pad)
+            x1, y1 = min(width, int(r.bbox[2]) + pad), min(height, int(r.bbox[3]) + pad)
+            cells = build_ruled_table(
+                ocr_gray[y0:y1, x0:x1], (x0, y0), width, height, line_height, models.recognizer, presence_gray=flat_gray[y0:y1, x0:x1]
+            )
+            if cells:
+                run_arithmetic_checks(cells)
+                tables[i] = cells
+                ruled_boxes.append(r.bbox)
+        _trace_tables(tr, st, regions, tables)
+
+    with tr.step("ocr") as st:
+        # text lines outside ruled tables
+        keep = [q for q in quads if not any(containment(quad_to_bbox(q), b) >= 0.5 for b in ruled_boxes)]
+        results = models.recognizer.recognize([crop_quad(ocr_gray, q) for q in keep]) if keep else []
+        results = [sanitize_ocr(t, p) for t, p in results]
+        lines = [OcrLine(text=t, confidence=p, bbox=quad_to_bbox(q), quad=q) for q, (t, p) in zip(keep, results) if t]
+        _trace_lines(tr, st, lines, review_threshold, source="ocr")
+
+    with tr.step("marks") as st:
+        # checkbox / radio groups
+        choices, used = build_choice_groups(regions, lines, width, height)
+        lines = [ln for i, ln in enumerate(lines) if i not in used]
+
+        # coloured ink: stamps, marks, signatures, handwriting
+        # coloured ink inside charts / checkboxes is content, not annotation
+        ignore = [r.bbox for r in regions if r.label in CHECKBOX_LABELS]
+        for r in regions:
+            if r.label == "picture":
+                inside = sum(1 for ln in lines if containment(ln.bbox, r.bbox) >= 0.5)
+                if (r.bbox[2] - r.bbox[0]) * (r.bbox[3] - r.bbox[1]) > 0.05 * width * height and inside >= 3:
+                    ignore.append(r.bbox)
+        blobs = find_ink_blobs(ink.masks, line_height, ignore_boxes=ignore)
+        texts = [
+            _ink_text(flat_gray, ink.masks[b.color], b.bbox, models, min_conf=0.5 if b.kind == InkKind.STAMP else 0.6)
+            if b.kind in (InkKind.STAMP, InkKind.HANDWRITING)
+            else HandwrittenText("", 0.0)
+            for b in blobs
+        ]
+        ink_elements, used = build_ink_elements(blobs, texts, lines, width, height, line_height)
+        lines = [ln for i, ln in enumerate(lines) if i not in used]
+
+        # pictures that are really stamps / signatures
+        ink_boxes = [b.bbox for b in blobs]
+        regions_kept = {
+            i
+            for i, r in enumerate(regions)
+            if not (r.label == "picture" and any(containment(r.bbox, ib) >= 0.5 or containment(ib, r.bbox) >= 0.5 for ib in ink_boxes))
+        }
+        filtered = [r for i, r in enumerate(regions) if i in regions_kept]
+        remap = {old: new for new, old in enumerate(i for i in range(len(regions)) if i in regions_kept)}
+        tables = {remap[i]: c for i, c in tables.items() if i in remap}
+
+        elements = build_elements(
+            pn,
+            width,
+            height,
+            filtered,
+            lines,
+            tables,
+            extra=choices + ink_elements,
+            review_threshold=review_threshold,
+            line_height=line_height,
+            engine=f"{models.layout.name}+{models.detector.name}+{models.recognizer.name}",
         )
-        if cells:
-            run_arithmetic_checks(cells)
-            tables[i] = cells
-            ruled_boxes.append(r.bbox)
-
-    # text lines outside ruled tables
-    keep = [q for q in quads if not any(containment(quad_to_bbox(q), b) >= 0.5 for b in ruled_boxes)]
-    results = models.recognizer.recognize([crop_quad(ocr_gray, q) for q in keep]) if keep else []
-    results = [sanitize_ocr(t, p) for t, p in results]
-    lines = [OcrLine(text=t, confidence=p, bbox=quad_to_bbox(q), quad=q) for q, (t, p) in zip(keep, results) if t]
-
-    # checkbox / radio groups
-    choices, used = build_choice_groups(regions, lines, width, height)
-    lines = [ln for i, ln in enumerate(lines) if i not in used]
-
-    # coloured ink: stamps, marks, signatures, handwriting
-    # coloured ink inside charts / checkboxes is content, not annotation
-    ignore = [r.bbox for r in regions if r.label in CHECKBOX_LABELS]
-    for r in regions:
-        if r.label == "picture":
-            inside = sum(1 for ln in lines if containment(ln.bbox, r.bbox) >= 0.5)
-            if (r.bbox[2] - r.bbox[0]) * (r.bbox[3] - r.bbox[1]) > 0.05 * width * height and inside >= 3:
-                ignore.append(r.bbox)
-    blobs = find_ink_blobs(ink.masks, line_height, ignore_boxes=ignore)
-    texts = [
-        _ink_text(flat_gray, ink.masks[b.color], b.bbox, models, min_conf=0.5 if b.kind == InkKind.STAMP else 0.6)
-        if b.kind in (InkKind.STAMP, InkKind.HANDWRITING)
-        else HandwrittenText("", 0.0)
-        for b in blobs
-    ]
-    ink_elements, used = build_ink_elements(blobs, texts, lines, width, height, line_height)
-    lines = [ln for i, ln in enumerate(lines) if i not in used]
-
-    # pictures that are really stamps / signatures
-    ink_boxes = [b.bbox for b in blobs]
-    regions_kept = {
-        i
-        for i, r in enumerate(regions)
-        if not (r.label == "picture" and any(containment(r.bbox, ib) >= 0.5 or containment(ib, r.bbox) >= 0.5 for ib in ink_boxes))
-    }
-    filtered = [r for i, r in enumerate(regions) if i in regions_kept]
-    remap = {old: new for new, old in enumerate(i for i in range(len(regions)) if i in regions_kept)}
-    tables = {remap[i]: c for i, c in tables.items() if i in remap}
-
-    elements = build_elements(
-        pn,
-        width,
-        height,
-        filtered,
-        lines,
-        tables,
-        extra=choices + ink_elements,
-        review_threshold=review_threshold,
-        line_height=line_height,
-        engine=f"{models.layout.name}+{models.detector.name}+{models.recognizer.name}",
-    )
-    attach_notes(elements)
+        attach_notes(elements)
+        st.data(ink=[{"kind": b.kind.value, "color": b.color, "bbox": tr.norm(b.bbox), "text": t.text} for b, t in zip(blobs, texts)])
+        _trace_elements(st, elements, len(choices))
     page = Page(
         page_number=pn,
         width=width,
@@ -220,36 +238,53 @@ def process_page(
     return PageOutput(page=page, display=display, has_red_stamp=has_red_stamp, stats={"line_height": line_height, "lines": len(lines)})
 
 
-def _process_digital(src: SourcePage, models, storage, document_id: str, s: Settings, review_threshold: float, raw_key: str, t0: float) -> PageOutput:
+def _process_digital(
+    src: SourcePage, models, storage, document_id: str, s: Settings, review_threshold: float, raw_key: str, t0: float, tr: PageTrace
+) -> PageOutput:
     """Digital PDF page: text (and table cell text) from the PDF text layer; layout model only, no OCR."""
     pn = src.page_number
     display = src.image
     height, width = display.shape[:2]
+    tr.set_size(width, height)
     gray = cv2.cvtColor(display, cv2.COLOR_RGB2GRAY)
     display_key = storage.put_image(document_id, f"pages/{pn}_display.jpg", display)
     ocr_key = storage.put_image(document_id, f"pages/{pn}_ocr.png", gray)
-    regions = postprocess_regions(models.layout.predict(display), min_score=s.layout_threshold)
-    heights = [ln.bbox[3] - ln.bbox[1] for ln in src.lines]
-    line_height = float(statistics.median(heights)) if heights else 34 * s.render_dpi / 300
-    tables: dict[int, list] = {}
-    ruled_boxes: list[PixelBox] = []
-    for i, r in enumerate(regions):
-        if r.label != "table":
-            continue
-        x0, y0 = max(0, int(r.bbox[0]) - 8), max(0, int(r.bbox[1]) - 8)
-        x1, y1 = min(width, int(r.bbox[2]) + 8), min(height, int(r.bbox[3]) + 8)
-        cells = build_ruled_table(gray[y0:y1, x0:x1], (x0, y0), width, height, line_height, None, text_lines=src.lines)
-        if cells:
-            run_arithmetic_checks(cells)
-            tables[i] = cells
-            ruled_boxes.append(r.bbox)
+    tr.skip("preprocess", "PDF số: trang đã thẳng và sạch, không cần xử lý ảnh", summary={"width": width, "height": height})
+    with tr.step("layout") as st:
+        regions = postprocess_regions(models.layout.predict(display), min_score=s.layout_threshold)
+        heights = [ln.bbox[3] - ln.bbox[1] for ln in src.lines]
+        line_height = float(statistics.median(heights)) if heights else 34 * s.render_dpi / 300
+        _trace_regions(tr, st, regions)
+    with tr.step("tables") as st:
+        tables: dict[int, list] = {}
+        ruled_boxes: list[PixelBox] = []
+        for i, r in enumerate(regions):
+            if r.label != "table":
+                continue
+            x0, y0 = max(0, int(r.bbox[0]) - 8), max(0, int(r.bbox[1]) - 8)
+            x1, y1 = min(width, int(r.bbox[2]) + 8), min(height, int(r.bbox[3]) + 8)
+            cells = build_ruled_table(gray[y0:y1, x0:x1], (x0, y0), width, height, line_height, None, text_lines=src.lines)
+            if cells:
+                run_arithmetic_checks(cells)
+                tables[i] = cells
+                ruled_boxes.append(r.bbox)
+        _trace_tables(tr, st, regions, tables)
     lines = [ln for ln in src.lines if not any(containment(ln.bbox, b) >= 0.5 for b in ruled_boxes)]
-    choices, used = build_choice_groups(regions, lines, width, height)
-    lines = [ln for i, ln in enumerate(lines) if i not in used]
-    elements = build_elements(
-        pn, width, height, regions, lines, tables, extra=choices, review_threshold=review_threshold,
-        line_height=line_height, engine=f"pdf_text+{models.layout.name}",
+    tr.skip(
+        "ocr",
+        "Đọc trực tiếp từ lớp chữ PDF, không cần OCR",
+        summary={"lines": len(lines)},
+        lines=[{"text": ln.text, "conf": 1.0, "bbox": tr.norm(ln.bbox), "source": "text_layer"} for ln in lines],
     )
+    with tr.step("marks") as st:
+        choices, used = build_choice_groups(regions, lines, width, height)
+        lines = [ln for i, ln in enumerate(lines) if i not in used]
+        elements = build_elements(
+            pn, width, height, regions, lines, tables, extra=choices, review_threshold=review_threshold,
+            line_height=line_height, engine=f"pdf_text+{models.layout.name}",
+        )
+        st.data(ink=[])
+        _trace_elements(st, elements, len(choices))
     page = Page(
         page_number=pn,
         width=width,
@@ -259,6 +294,52 @@ def _process_digital(src: SourcePage, models, storage, document_id: str, s: Sett
         processing_time_ms=int((time.perf_counter() - t0) * 1000),
     )
     return PageOutput(page=page, display=display, stats={"line_height": line_height, "lines": len(lines), "digital": True})
+
+
+# trace payloads ---------------------------------------------------------------
+def _trace_regions(tr: PageTrace, st, regions) -> None:
+    st.summary(regions=len(regions), by_label=dict(Counter(r.label for r in regions)))
+    st.data(regions=[{"label": r.label, "score": round(float(r.score), 3), "bbox": tr.norm(r.bbox)} for r in regions])
+
+
+def _trace_tables(tr: PageTrace, st, regions, tables: dict[int, list]) -> None:
+    cells = [c for cs in tables.values() for c in cs]
+    st.summary(tables=len(tables), cells=len(cells), check_failed=sum(c.check_failed for c in cells))
+    st.data(
+        tables=[
+            {
+                "bbox": tr.norm(regions[i].bbox),
+                "cells": [
+                    {"row": c.row, "col": c.col, "rowspan": c.rowspan, "colspan": c.colspan, "text": c.text,
+                     "conf": round(c.confidence, 3), "bbox": list(c.bbox) if c.bbox else None, "check_failed": c.check_failed}
+                    for c in cs
+                ],
+            }
+            for i, cs in tables.items()
+        ]
+    )
+
+
+def _trace_lines(tr: PageTrace, st, lines: list[OcrLine], review_threshold: float, source: str) -> None:
+    confs = [ln.confidence for ln in lines]
+    st.summary(
+        lines=len(lines),
+        mean_conf=round(statistics.fmean(confs), 3) if confs else None,
+        low_conf=sum(c < review_threshold for c in confs),
+    )
+    st.data(lines=[{"text": ln.text, "conf": round(ln.confidence, 3), "bbox": tr.norm(ln.bbox), "source": source} for ln in lines])
+
+
+def _trace_elements(st, elements: list[Element], checkbox_groups: int) -> None:
+    kinds = Counter(e.type.value for e in elements)
+    st.summary(
+        elements=len(elements),
+        needs_review=sum(e.needs_human_review for e in elements),
+        checkbox_groups=checkbox_groups,
+        stamps=kinds.get("stamp", 0),
+        signatures=kinds.get("signature", 0),
+        handwriting=kinds.get("handwritten_note", 0),
+    )
 
 
 __all__ = ["PageOutput", "attach_notes", "denormalize_bbox", "downscale", "process_page"]

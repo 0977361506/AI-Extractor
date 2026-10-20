@@ -196,3 +196,14 @@ def test_preview_backfilled_for_documents_processed_before_previews_existed(offi
 def test_scanned_document_has_no_preview(client):
     d = _upload(client)
     assert client.get(f"/api/v1/documents/{d['document_id']}/pages/1/preview").status_code == 404
+
+
+def test_page_trace_served_while_partial_and_404_for_documents_without_one(client, tmp_path):
+    d = _upload(client)
+    url = f"/api/v1/documents/{d['document_id']}/pages/1/trace"
+    assert client.get(url).status_code == 404  # processed before traces existed
+    st = LocalStorage(tmp_path / "data")
+    st.put_text(d["document_id"], "pages/1_trace.json", json.dumps({"page": 1, "steps": {"layout": {"status": "running"}}}))
+    r = client.get(url)
+    assert r.status_code == 200 and r.json()["steps"]["layout"]["status"] == "running"
+    assert r.headers["cache-control"] == "no-store"

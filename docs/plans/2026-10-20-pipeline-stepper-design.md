@@ -14,6 +14,9 @@ hay phát lại sau khi chạy xong).
 
 Thay dropzone ở trang chủ; danh sách hồ sơ cũ giữ nguyên bên dưới.
 
+> Thứ tự bước theo đúng code: bảng được dựng (OCR từng ô) **trước** khi đọc các dòng ngoài bảng, nên
+> stepper là `preprocess → layout → tables → ocr → marks → vlm` (thay cho bước gộp "Bảng & dấu" ban đầu).
+
 ```
 ┌ Kéo thả hồ sơ ───────────────────────────────────────────────┐
 ├ Hàng chờ: [hd.pdf ▓▓▓░ 60%] [bctc.xlsx ✔] [scan.jpg ⏳] ─────┤
@@ -33,9 +36,10 @@ Thay dropzone ở trang chủ; danh sách hồ sơ cũ giữ nguyên bên dướ
 |---|---|---|
 | ingest · Nhận file | loại file, số trang, bảng mã | — |
 | preprocess · Làm sạch | ảnh gốc → đã xoay thẳng, góc xoay/lệch | ảnh làm sạch cho OCR |
-| layout · Bố cục | khung vùng tô màu theo loại | độ tin cậy từng vùng |
+| layout · Bố cục | khung vùng tô màu theo loại + khung dòng chữ phát hiện | độ tin cậy từng vùng |
+| tables · Bảng | số bảng / ô | lưới ô, ô sai kiểm tra số học |
 | ocr · Đọc chữ | số dòng, độ tin cậy TB | khung dòng OCR thô, hover xem text |
-| structure · Bảng & dấu | số bảng / dấu / chữ ký / checkbox | lưới ô, ô sai kiểm tra số học |
+| marks · Dấu & ghép trang | số dấu / chữ ký / checkbox / phần tử | khung vết mực + text đọc được |
 | vlm · AI chuyên sâu | số vùng gửi gateway (`skipped` nếu tắt) | danh sách trước → sau |
 | assemble · Hoàn tất | số mục cần duyệt, **Mở đối chiếu** | xem nhanh Markdown |
 
