@@ -3,6 +3,7 @@ import { useState } from "react";
 import { api } from "../api";
 import { usePipeline } from "../hooks/usePipeline";
 import { progressOf, stepsForPage, type PipelineState } from "../lib/pipeline";
+import { FileBadge, Seal } from "./Marks";
 import { StepPanel } from "./StepPanel";
 import { Stepper } from "./Stepper";
 
@@ -42,17 +43,19 @@ export function ProcessView({ documentId, filename, onOpen }: { documentId: stri
   return (
     <section className="card process">
       <div className="process-head">
+        <FileBadge filename={filename} />
         <strong className="fname">{filename}</strong>
         <span className={`status s-${p.status}`}>{STATUS_VI[p.status] ?? p.status}</span>
         <span className="bar"><span style={{ width: `${progressOf(p)}%` }} /></span>
-        <span className="small">{`${progressOf(p)}%`}</span>
-        <span className="muted small">{p.message}</span>
+        <span className="pct num">{`${progressOf(p)}%`}</span>
+        <span className="muted small msg">{p.message}</span>
         <span className="spacer" />
         {!following && !p.final && (
           <button type="button" className="ghost" onClick={() => { setPageChoice(null); setStepChoice(null); }}>
             Theo dõi bước đang chạy
           </button>
         )}
+        {p.final && p.status === "COMPLETED" && <Seal />}
       </div>
 
       {!p.plan ? (
